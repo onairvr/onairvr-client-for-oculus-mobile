@@ -14,9 +14,9 @@ public class AirVRClientInputModule : OVRInputModule
 {
     protected override PointerEventData.FramePressState GetGazeButtonState()
     {
-        var pressed = OVRInput.GetDown(OVRInput.Button.One) || Input.GetMouseButtonDown(0) || Input.GetKeyDown(gazeClickKey);
-        var released = OVRInput.GetUp(OVRInput.Button.One) || Input.GetMouseButtonUp(0) || Input.GetKeyUp(gazeClickKey);
-
+        var pressed = OVRInput.GetDown(OVRInput.Button.One) || Input.GetKeyDown(gazeClickKey);
+        var released = OVRInput.GetUp(OVRInput.Button.One) || Input.GetKeyUp(gazeClickKey);
+        
         if (pressed && released)
             return PointerEventData.FramePressState.PressedAndReleased;
         if (pressed)
