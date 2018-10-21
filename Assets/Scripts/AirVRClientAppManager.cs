@@ -7,6 +7,7 @@
 
  ***********************************************************/
 
+using System.Text;
 using UnityEngine;
 using UnityEngine.VR;
 
@@ -129,7 +130,8 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
         AirVRClient.Play();
     }
 
-    public void AirVRClientPlaybackStarted() { }
+    public void AirVRClientPlaybackStarted() {}
+    
     public void AirVRClientPlaybackStopped() { }
 
     public void AirVRClientDisconnected()
@@ -137,5 +139,10 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
         OnDisconnected();
     }
 
-    public void AirVRClientUserDataReceived(byte[] userData) { }
+    public void AirVRClientUserDataReceived(byte[] userData) {
+        Debug.Log("User data received: " + userData.Length);
+        
+        // pong received data back to the server
+        AirVRClient.SendUserData(userData);
+    }
 }

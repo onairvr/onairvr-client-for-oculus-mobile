@@ -123,8 +123,14 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
 	public static void Disconnect() {
 		onairvr_RequestDisconnect();
 	}
-		
-    private AirVRProfileBase _profile;
+
+	public static void SendUserData(byte[] data) {
+		if (_eventDispatcher != null) {
+			_eventDispatcher.SendUserData(data);
+		}
+	}
+
+	private AirVRProfileBase _profile;
     private AirVRVideoFrameRenderer _videoFrameRenderer;
 	private AirVRClientStateMachine _stateMachine;
         

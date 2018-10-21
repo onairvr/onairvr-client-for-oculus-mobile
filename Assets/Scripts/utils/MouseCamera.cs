@@ -11,8 +11,9 @@ using UnityEngine;
 
 public class MouseCamera : MonoBehaviour
 {
+    public enum RotationAxes { MouseXAndY = 0, MouseX = 1, MouseY = 2 }
+    
     [SerializeField] Transform cameraRigTransform;
-    [SerializeField] public enum RotationAxes { MouseXAndY = 0, MouseX = 1, MouseY = 2 }
     [SerializeField] public RotationAxes axes = RotationAxes.MouseXAndY;
     [SerializeField] private float lerpSpeed = 10f;
     [SerializeField] private float sensitivityX = 10f;
