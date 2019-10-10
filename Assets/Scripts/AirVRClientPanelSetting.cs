@@ -85,7 +85,7 @@ public class AirVRClientPanelSetting : AirVRClientPanel
 
     private void Update()
     {
-        if (OVRInput.GetDown(OVRInput.Button.Up) || Input.GetKeyDown(KeyCode.UpArrow))
+        if (OVRInput.GetDown(OVRInput.Button.Up) || Input.GetKeyDown(KeyCode.UpArrow) || OVRInput.GetDown(OVRInput.Button.Two))
         {
             _inputUserID.gameObject.SetActive(!_inputUserID.gameObject.activeSelf);
         }

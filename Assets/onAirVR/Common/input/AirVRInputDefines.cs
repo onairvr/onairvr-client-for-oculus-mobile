@@ -12,6 +12,8 @@ public static class AirVRInputDeviceName {
     public const string Touchpad = "Touchpad";
     public const string Gamepad = "Gamepad";
     public const string TrackedController = "TrackedController";
+    public const string LeftController = "LeftController";
+    public const string RightController = "RightController";
 }
 
 public enum AirVRHeadTrackerKey {
@@ -98,3 +100,19 @@ public enum AirVRTrackedControllerKey {
     Max
 }
 
+public enum AirVRControllerKey {
+    Transform = 0,
+    RaycastHitResult,
+
+    Axis2DThumbstick,
+    Axis1DIndexTrigger,
+    Axis1DHandTrigger,
+    ButtonThumbstick,
+    ButtonOne,
+    ButtonTwo,
+    ButtonSystem,
+
+    // ADD ADDITIONAL KEYS HERE
+
+    Max
+}

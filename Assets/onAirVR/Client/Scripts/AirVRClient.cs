@@ -103,7 +103,7 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
 		if (_instance != null) {
 			_instance._profile.userID = userID;
 			onairvr_SetProfile(JsonUtility.ToJson(_instance._profile.GetSerializable()));
-			
+
 			onairvr_RequestConnect(address, port);
 		}
     }

@@ -28,9 +28,6 @@ public abstract class AirVRProfileBase {
 	[SerializeField] private float VideoFrameRate;
     [SerializeField] private float IPD;
 	[SerializeField] private bool Stereoscopy;
-	[SerializeField] private bool IsEyeCameraFrustumSymmetric;
-	[SerializeField] private float EyeCameraVerticalFOV;
-	[SerializeField] private float EyeCameraAspectRatio;
 	[SerializeField] private float[] LeftEyeCameraNearPlane;
 	[SerializeField] private Vector3 EyeCenterPosition;
 
@@ -99,9 +96,6 @@ public abstract class AirVRProfileBase {
     public abstract int videoHeight { get; }
     public abstract float videoFrameRate { get; }
 	public abstract bool stereoscopy { get; }
-    public abstract bool isEyeCameraFrustumSymmetric { get; }
-    public abstract float eyeCameraVerticalFieldOfView { get; }     // valid for symmetric eye camera only
-    public abstract float eyeCameraAspectRatio { get; }             // valid for symmetric eye camera only
     public abstract float[] leftEyeCameraNearPlane { get; }
     public abstract Vector3 eyeCenterPosition { get; }
     public abstract float ipd { get; }
@@ -180,9 +174,6 @@ public abstract class AirVRProfileBase {
 		VideoFrameRate = videoFrameRate;
         IPD = ipd;
 		Stereoscopy = stereoscopy;
-		IsEyeCameraFrustumSymmetric = isEyeCameraFrustumSymmetric;
-		EyeCameraVerticalFOV = eyeCameraVerticalFieldOfView;
-		EyeCameraAspectRatio = eyeCameraAspectRatio;
 		LeftEyeCameraNearPlane = leftEyeCameraNearPlane;
 		EyeCenterPosition = eyeCenterPosition;
 
@@ -205,13 +196,10 @@ public abstract class AirVRProfileBase {
                              "    render type={5}\n" +
                              "    leftEyeViewport=({6}, {7}, {8}, {9})\n" + 
                              "    rightEyeViewport=({10}, {11}, {12}, {13})\n" + 
-                             "    isEyeCameraFrustumSymmetric={14}\n" + 
-                             "    eyeCameraVerticalFieldOfView={15}\n" + 
-                             "    eyeCameraAspectRatio={16}\n" + 
-                             "    leftEyeCameraNearPlane=({17}, {18}, {19}, {20})\n" +
-                             "    eyeCenterPosition={21}\n" + 
-                             "    ipd={22}\n" + 
-                             "    stereoscopy={23}\n", 
+                             "    leftEyeCameraNearPlane=({14}, {15}, {16}, {17})\n" +
+                             "    eyeCenterPosition={18}\n" + 
+                             "    ipd={19}\n" + 
+                             "    stereoscopy={20}\n", 
                              videoWidth, 
                              videoHeight, 
                              videoFrameRate, 
@@ -219,9 +207,6 @@ public abstract class AirVRProfileBase {
                              renderType, 
                              leftEyeViewport[0], leftEyeViewport[1], leftEyeViewport[2], leftEyeViewport[3], 
                              rightEyeViewport[0], rightEyeViewport[1], rightEyeViewport[2], rightEyeViewport[3], 
-                             isEyeCameraFrustumSymmetric, 
-                             eyeCameraVerticalFieldOfView, 
-                             eyeCameraAspectRatio, 
                              leftEyeCameraNearPlane[0], leftEyeCameraNearPlane[1], leftEyeCameraNearPlane[2], leftEyeCameraNearPlane[3], 
                              eyeCenterPosition, 
                              ipd, 
