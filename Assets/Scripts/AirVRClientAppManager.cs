@@ -15,7 +15,9 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
 {    
     [SerializeField] private GameObject _room;
     [SerializeField][RangeAttribute(0.5f, 2.0f)] private float _renderScale = 1f;
+
     private bool _lastUserPresent = false;
+    private Light _envLight;
 
     public bool IsConnecting { get; private set; }
     public AirVRClientNotification Notification { get; private set; }
@@ -24,6 +26,8 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
 
     private void Awake()
     {
+        _envLight = transform.Find("EnvLight").GetComponent<Light>();
+
         Notification = FindObjectOfType<AirVRClientNotification>();
         Config = new AirVRClientAppConfig();
         InputModule = FindObjectOfType<AirVRClientInputModule>();
@@ -94,13 +98,15 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
         IsConnecting = true;
         Notification.DisplayConnecting();
 
-        #if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR
         AirVRClient.Connect(address, port, userID.ToString());
-        #endif
+#endif
     }
 
     private void OnDisconnected()
     {
+        _envLight.enabled = true;
+
         if (!_room.activeSelf)
             _room.SetActive(true);
 
@@ -128,6 +134,8 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
         IsConnecting = false;
         AirVRClientUIManager.Instance.Hide();
         AirVRClient.Play();
+
+        _envLight.enabled = false;
     }
 
     public void AirVRClientPlaybackStarted() {}

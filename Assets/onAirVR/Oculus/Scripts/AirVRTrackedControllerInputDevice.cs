@@ -21,17 +21,21 @@ internal class AirVRTrackedControllerInputDevice : AirVRInputDevice {
 
     protected override bool connected {
         get {
-            return (OVRInput.GetConnectedControllers() & (OVRInput.Controller.LTrackedRemote | OVRInput.Controller.RTrackedRemote)) != 0;
+            return (OVRInput.GetConnectedControllers() & (
+                AirVRCamera.ParseController(OVRInput.Controller.LTouch) | 
+                AirVRCamera.ParseController(OVRInput.Controller.RTouch)
+                )) != 0;
         }
     }
 
     protected override void PendInputs(AirVRInputStream inputStream) {
-        bool leftHanded = (OVRInput.GetConnectedControllers() & OVRInput.Controller.LTrackedRemote) != 0;
-        OVRInput.Controller controller = OVRInput.Controller.LTrackedRemote | OVRInput.Controller.RTrackedRemote;
+        bool leftHanded = !AirVRCamera.IsConnected(OVRInput.Controller.RTrackedRemote);
+        OVRInput.Controller controller = leftHanded ? OVRInput.Controller.LTrackedRemote : OVRInput.Controller.RTrackedRemote;
+
         inputStream.PendTransform(this, (byte)AirVRTrackedControllerKey.Transform,
-                                  OVRInput.GetLocalControllerPosition(leftHanded ? OVRInput.Controller.LTrackedRemote : OVRInput.Controller.RTrackedRemote),
-                                  OVRInput.GetLocalControllerRotation(leftHanded ? OVRInput.Controller.LTrackedRemote : OVRInput.Controller.RTrackedRemote));
-        inputStream.PendTouch(this, (byte)AirVRTrackedControllerKey.Touchpad, 
+                                  OVRInput.GetLocalControllerPosition(controller),
+                                  OVRInput.GetLocalControllerRotation(controller));
+        inputStream.PendTouch(this, (byte)AirVRTrackedControllerKey.Touchpad,
                               OVRInput.Get(leftHanded ? OVRInput.RawAxis2D.LTouchpad : OVRInput.RawAxis2D.RTouchpad, controller),
                               OVRInput.Get(leftHanded ? OVRInput.RawTouch.LTouchpad : OVRInput.RawTouch.RTouchpad, controller));
         inputStream.PendButton(this, (byte)AirVRTrackedControllerKey.ButtonTouchpad,
