@@ -17,13 +17,13 @@ public class AirVRProfile : AirVRProfileBase {
 
 	public override int videoWidth { 
         get {
-            return AirVRCamera.headsetType == AirVRCamera.HeadsetType.Quest ? 3840 : 2560;
+            return AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest ? 3680 : 2560;
         }
     }
 
     public override int videoHeight { 
         get {
-            return AirVRCamera.headsetType == AirVRCamera.HeadsetType.Quest ? 1920 : 1280;
+            return AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest ? 1840 : 1280;
         }
     }
 

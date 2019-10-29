@@ -19,8 +19,8 @@ public class AirVRClientOVRController : MonoBehaviour
     private bool _prevControllerConnectedCached = false;
 
     void Update()
-    {                   
-        bool controllerConnected = OVRInput.IsControllerConnected(_controller);
+    {
+        bool controllerConnected = AirVROVRInputHelper.IsConnected(_controller);
 
 #if UNITY_ANDROID && !UNITY_EDITOR
         controllerConnected = controllerConnected && !AirVRClient.connected;

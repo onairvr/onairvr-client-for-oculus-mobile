@@ -3515,26 +3515,6 @@ Transform:
   m_Father: {fileID: 798383866}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &883153798 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1054112583220142, guid: 126d619cf4daa52469682f85c1378b4a,
-    type: 3}
-  m_PrefabInstance: {fileID: 1961276069}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &883153799
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 883153798}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6c5ff111d7c35f94bb5f51cdba771082, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _model: {fileID: 2059231060}
-  _controller: 2
 --- !u!1 &913320658
 GameObject:
   m_ObjectHideFlags: 0
@@ -6412,12 +6392,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1557091833}
   m_Mesh: {fileID: 4300000, guid: 23afc21727be46f45bbad91249aed35a, type: 3}
---- !u!1 &1580223808 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 112276, guid: d9809c5e8418bb047bf2c8ba1d1a2cec,
-    type: 3}
-  m_PrefabInstance: {fileID: 1439408800}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1676132704
 GameObject:
   m_ObjectHideFlags: 0
@@ -6502,26 +6476,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1676132704}
   m_CullTransparentMesh: 0
---- !u!1 &1713503258 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1983321904398200, guid: 126d619cf4daa52469682f85c1378b4a,
-    type: 3}
-  m_PrefabInstance: {fileID: 1961276069}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1713503259
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1713503258}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6c5ff111d7c35f94bb5f51cdba771082, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _model: {fileID: 1580223808}
-  _controller: 1
 --- !u!1 &1735395836
 GameObject:
   m_ObjectHideFlags: 0
@@ -8375,12 +8329,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2022315470}
   m_Mesh: {fileID: 4300000, guid: 2286042ebae29cc4d8e7656d5f5ccee7, type: 3}
---- !u!1 &2059231060 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 112276, guid: d9809c5e8418bb047bf2c8ba1d1a2cec,
-    type: 3}
-  m_PrefabInstance: {fileID: 86781752}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2129083678
 GameObject:
   m_ObjectHideFlags: 0
