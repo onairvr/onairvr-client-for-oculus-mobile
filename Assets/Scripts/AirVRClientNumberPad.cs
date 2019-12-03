@@ -87,7 +87,7 @@ public class AirVRClientNumberPad : MonoBehaviour
         while (elapsedTime < _showDuration)
         {            
             _canvasGroup.alpha = _showAnimationCurve.Evaluate(elapsedTime);
-            transform.position = _startPos + (_endPos - _startPos) * _showAnimationCurve.Evaluate(elapsedTime);
+            transform.localPosition = _startPos + (_endPos - _startPos) * _showAnimationCurve.Evaluate(elapsedTime);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
@@ -107,7 +107,7 @@ public class AirVRClientNumberPad : MonoBehaviour
         while (elapsedTime < _hideDuration)
         {
             _canvasGroup.alpha = _hideAnimationCurve.Evaluate(elapsedTime);
-            transform.position = _startPos + (_endPos - _startPos) * _hideAnimationCurve.Evaluate(elapsedTime);
+            transform.localPosition = _startPos + (_endPos - _startPos) * _hideAnimationCurve.Evaluate(elapsedTime);
             transform.localScale = Vector3.one * (0.8f + 0.2f * _hideAnimationCurve.Evaluate(elapsedTime));
             elapsedTime += Time.deltaTime;
             yield return null;

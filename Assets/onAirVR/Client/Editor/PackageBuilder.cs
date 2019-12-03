@@ -5,11 +5,9 @@ using UnityEditor;
 using UnityEngine;
 
 public class PackageBuilder {
-    private const string PackageFilename = "onAirVRClient.unitypackage";
-
     [MenuItem("onAirVR/Export onAirVR Client...")]
     public static void ExportAirVRClient() {
-        string targetPath = EditorUtility.SaveFilePanel("Export onAirVR Client...", "", "onAirVRClient", "unitypackage");
+        string targetPath = EditorUtility.SaveFilePanel("Export onAirVR Client...", "", "onairvr-client", "unitypackage");
         if (string.IsNullOrEmpty(targetPath)) {
             return;
         }

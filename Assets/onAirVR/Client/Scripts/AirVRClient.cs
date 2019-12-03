@@ -95,7 +95,7 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
                 _instance._videoFrameRenderer = new AirVRVideoFrameRenderer(go, profile, camera);
             }
 
-			onairvr_SetProfile(JsonUtility.ToJson(profile.GetSerializable()));
+            onairvr_SetProfile(JsonUtility.ToJson(profile.GetSerializable()));
         }
     }
 
