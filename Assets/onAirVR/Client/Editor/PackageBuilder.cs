@@ -23,6 +23,7 @@ public class PackageBuilder {
         }
         assets.Add("Assets/Plugins/Android/assets/client.license");
         assets.Add("Assets/Plugins/Android/onAirVRClientPlugin.jar");
+        assets.Add("Assets/Plugins/Android/kotlin-stdlib.jar");
         assets.Add("Assets/Plugins/Android/libonAirVRClientPlugin.so");
         AssetDatabase.ExportPackage(assets.ToArray(), targetPath);
 

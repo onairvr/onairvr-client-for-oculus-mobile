@@ -112,6 +112,10 @@ public abstract class AirVRCameraBase : MonoBehaviour {
             yield return null;
 
             _renderingRight = false;
+
+#if !UNITY_EDITOR && UNITY_ANDROID
+            GL.IssuePluginEvent(onairvr_EndOfRenderFrame_RenderThread_Func(), 0);
+#endif
         }
     }
 
@@ -203,6 +207,9 @@ public abstract class AirVRCameraBase : MonoBehaviour {
 
     [DllImport(AirVRClient.LibPluginName)]
     private static extern System.IntPtr onairvr_RenderVideoFrame_RenderThread_Func();
+
+    [DllImport(AirVRClient.LibPluginName)]
+    private static extern System.IntPtr onairvr_EndOfRenderFrame_RenderThread_Func();
 
     private const uint RenderEventMaskClearColor = 0x00800000U;
 

@@ -5,8 +5,8 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class AirVRRealWorldSpaceSetup : MonoBehaviour {
     private const int MaxDistance = 50;
-    private const float BoundaryLineWidth = 0.1f;
-    private const float OriginIndicatorLineWidth = 0.05f;
+    private const float BoundaryLineWidth = 0.05f;
+    private const float OriginIndicatorLineWidth = 0.025f;
 
     private Transform _thisTransform;
     private AirVRCamera _cameraRig;
@@ -19,6 +19,11 @@ public class AirVRRealWorldSpaceSetup : MonoBehaviour {
 
     private int gridSize => MaxDistance * 2 + 1;
     private int gridVerticeCount => gridSize * 4;
+
+    [SerializeField] private Color _colorGrid = new Color(0.357f, 0.357f, 0.357f);
+    [SerializeField] private Color _colorBoundary = new Color(0.6f, 0.196f, 0.8f);
+    [SerializeField] private Color _colorForward = new Color(0.255f, 0.412f, 0.882f);
+    [SerializeField] private Color _colorRightward = new Color(0.698f, 0.133f, 0.133f);
 
     private void Awake() {
         _thisTransform = transform;
@@ -96,9 +101,9 @@ public class AirVRRealWorldSpaceSetup : MonoBehaviour {
         _mesh.vertices = _vertices;
         _mesh.colors = _colors;
 
-        var offset = updateGridLines(new Color(0.357f, 0.357f, 0.357f));
-        offset = updateBoundary(offset, boundary, Color.green);
-        updateOriginIndicator(offset, Color.blue, Color.red);
+        var offset = updateGridLines(_colorGrid);
+        offset = updateBoundary(offset, boundary, _colorBoundary);
+        updateOriginIndicator(offset, _colorForward, _colorRightward);
     }
 
     private int updateGridLines(Color color) {

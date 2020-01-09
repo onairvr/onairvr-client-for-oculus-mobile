@@ -1,6 +1,6 @@
 ﻿/***********************************************************
 
-  Copyright (c) 2017-2018 Clicked, Inc.
+  Copyright (c) 2017-present Clicked, Inc.
 
   Licensed under the MIT license found in the LICENSE file 
   in the Docs folder of the distributed package.
@@ -14,72 +14,78 @@ using UnityEngine.Assertions;
 
 [System.Serializable]
 public abstract class AirVRProfileBase {
+    private const int ProfilerMaskFrame = 0x01;
+    private const int ProfilerMaskReport = 0x02;
+
     public enum RenderType {
         DirectOnTwoEyeTextures,
         UseSeperateVideoRenderTarget
     }
-		
-	#pragma warning disable CS0414
-	[SerializeField] private string UserID;
-	[SerializeField] private string[] SupportedVideoCodecs;
-	[SerializeField] private string[] SupportedAudioCodecs;
-	[SerializeField] private int VideoWidth;
-	[SerializeField] private int VideoHeight;
-	[SerializeField] private float VideoFrameRate;
+
+#pragma warning disable CS0414
+    [SerializeField] private string UserID;
+    [SerializeField] private int Bitrate;
+    [SerializeField] private int Profilers;
+    [SerializeField] private string ProfilerLogPostfix;
+    [SerializeField] private string[] SupportedVideoCodecs;
+    [SerializeField] private string[] SupportedAudioCodecs;
+    [SerializeField] private int VideoWidth;
+    [SerializeField] private int VideoHeight;
+    [SerializeField] private float VideoFrameRate;
     [SerializeField] private float IPD;
-	[SerializeField] private bool Stereoscopy;
-	[SerializeField] private float[] LeftEyeCameraNearPlane;
-	[SerializeField] private Vector3 EyeCenterPosition;
+    [SerializeField] private bool Stereoscopy;
+    [SerializeField] private float[] LeftEyeCameraNearPlane;
+    [SerializeField] private Vector3 EyeCenterPosition;
 
-	[SerializeField] private int[] LeftEyeViewport;
-	[SerializeField] private int[] RightEyeViewport;
-	[SerializeField] private float[] VideoRenderMeshVertices;
-	[SerializeField] private float[] VideoRenderMeshTexCoords;
-	[SerializeField] private int[] VideoRenderMeshIndices;
-	[SerializeField] private float[] VideoScale;
-	#pragma warning restore CS0414
+    [SerializeField] private int[] LeftEyeViewport;
+    [SerializeField] private int[] RightEyeViewport;
+    [SerializeField] private float[] VideoRenderMeshVertices;
+    [SerializeField] private float[] VideoRenderMeshTexCoords;
+    [SerializeField] private int[] VideoRenderMeshIndices;
+    [SerializeField] private float[] VideoScale;
+#pragma warning restore CS0414
 
-	private string[] supportedVideoCodecs {
-		get {
-			bool supportAVC = false;
-			bool supportHEVC = false;
+    private string[] supportedVideoCodecs {
+        get {
+            bool supportAVC = false;
+            bool supportHEVC = false;
 
-			if (Application.isEditor == false && Application.platform == RuntimePlatform.Android) {
-				AndroidJavaObject mediaCodecList = new AndroidJavaObject("android.media.MediaCodecList", 0);
-				AndroidJavaObject[] mediaCodecInfos = mediaCodecList.Call<AndroidJavaObject[]>("getCodecInfos");
-				foreach (AndroidJavaObject codecInfo in mediaCodecInfos) {
-					string[] types = codecInfo.Call<string[]>("getSupportedTypes");
-					foreach (string type in types) {
-						if (type.Equals("video/avc")) {
-							supportAVC = true;
-						} else if (type.Equals("video/hevc")) {
-							supportHEVC = this.supportHEVC;
-						}
-					}
-				}
-			} else {
-				supportAVC = supportHEVC = true;
-			}
-			Assert.IsTrue(supportHEVC || supportAVC);
-			string[] result = new string[(supportHEVC && supportAVC) ? 2 : 1];
-			if (supportHEVC) {
-				result[0] = "H265";
-			}
-			if (supportAVC) {
-				result[result.Length - 1] = "H264";
-			}
+            if (Application.isEditor == false && Application.platform == RuntimePlatform.Android) {
+                AndroidJavaObject mediaCodecList = new AndroidJavaObject("android.media.MediaCodecList", 0);
+                AndroidJavaObject[] mediaCodecInfos = mediaCodecList.Call<AndroidJavaObject[]>("getCodecInfos");
+                foreach (AndroidJavaObject codecInfo in mediaCodecInfos) {
+                    string[] types = codecInfo.Call<string[]>("getSupportedTypes");
+                    foreach (string type in types) {
+                        if (type.Equals("video/avc")) {
+                            supportAVC = true;
+                        } else if (type.Equals("video/hevc")) {
+                            supportHEVC = this.supportHEVC;
+                        }
+                    }
+                }
+            } else {
+                supportAVC = supportHEVC = true;
+            }
+            Assert.IsTrue(supportHEVC || supportAVC);
+            string[] result = new string[(supportHEVC && supportAVC) ? 2 : 1];
+            if (supportHEVC) {
+                result[0] = "H265";
+            }
+            if (supportAVC) {
+                result[result.Length - 1] = "H264";
+            }
 
-			return result;
-		}
+            return result;
+        }
     }
 
-	private string[] supportedAudioCodecs {
-		get {
-			return new string[] { "opus" };
-		}
-	}
+    private string[] supportedAudioCodecs {
+        get {
+            return new string[] { "opus" };
+        }
+    }
 
-    private float[] leftEyeCameraNearPlaneScaled { 
+    private float[] leftEyeCameraNearPlaneScaled {
         get {
             float[] result = leftEyeCameraNearPlane;
             float[] scale = videoScale;
@@ -91,53 +97,53 @@ public abstract class AirVRProfileBase {
             return result;
         }
     }
-        
+
     public abstract int videoWidth { get; }
     public abstract int videoHeight { get; }
     public abstract float videoFrameRate { get; }
-	public abstract bool stereoscopy { get; }
+    public abstract bool stereoscopy { get; }
     public abstract float[] leftEyeCameraNearPlane { get; }
     public abstract Vector3 eyeCenterPosition { get; }
     public abstract float ipd { get; }
-	public abstract bool hasInput { get; }
+    public abstract bool hasInput { get; }
 
-	public abstract RenderType renderType { get; }
-	public abstract int[] leftEyeViewport { get; }
-	public abstract int[] rightEyeViewport { get; }
-	public abstract float[] videoScale { get; }   // ratio of the size of the whole video rendered to the size of the area visible to an eye camera
-	
-	public abstract bool isUserPresent { get; }
-	public abstract float delayToResumePlayback { get; }
+    public abstract RenderType renderType { get; }
+    public abstract int[] leftEyeViewport { get; }
+    public abstract int[] rightEyeViewport { get; }
+    public abstract float[] videoScale { get; }   // ratio of the size of the whole video rendered to the size of the area visible to an eye camera
 
-	public virtual float[] videoRenderMeshVertices { 
-		get { 
-			return new float[] { 
-				-0.5f,  0.5f, 0.0f,
-				0.5f,  0.5f, 0.0f,
-				-0.5f, -0.5f, 0.0f,
-				0.5f, -0.5f, 0.0f 
-			};
-		}
-	}
+    public abstract bool isUserPresent { get; }
+    public abstract float delayToResumePlayback { get; }
 
-	public virtual float[] videoRenderMeshTexCoords { 
-		get { 
-			return new float[] {
-				0.0f, 1.0f,
-				1.0f, 1.0f,
-				0.0f, 0.0f,
-				1.0f, 0.0f
-			};
-		}
-	}
+    public virtual float[] videoRenderMeshVertices {
+        get {
+            return new float[] {
+                -0.5f,  0.5f, 0.0f,
+                0.5f,  0.5f, 0.0f,
+                -0.5f, -0.5f, 0.0f,
+                0.5f, -0.5f, 0.0f
+            };
+        }
+    }
 
-	public virtual int[] videoRenderMeshIndices { 
-		get { 
-			return new int[] {
-				0, 1, 2, 2, 1, 3
-			};
-		}
-	}
+    public virtual float[] videoRenderMeshTexCoords {
+        get {
+            return new float[] {
+                0.0f, 1.0f,
+                1.0f, 1.0f,
+                0.0f, 0.0f,
+                1.0f, 0.0f
+            };
+        }
+    }
+
+    public virtual int[] videoRenderMeshIndices {
+        get {
+            return new int[] {
+                0, 1, 2, 2, 1, 3
+            };
+        }
+    }
 
     public virtual bool supportHEVC {
         get {
@@ -145,7 +151,7 @@ public abstract class AirVRProfileBase {
         }
     }
 
-    public bool useSeperateVideoRenderTarget { 
+    public bool useSeperateVideoRenderTarget {
         get {
             return renderType == RenderType.UseSeperateVideoRenderTarget;
         }
@@ -157,14 +163,68 @@ public abstract class AirVRProfileBase {
         }
     }
 
-	public string userID {
-		get { 
-			return UserID;
-		}
-		set { 
-			UserID = value;
-		}
-	}
+    public string userID {
+        get {
+            return UserID;
+        }
+        set {
+            UserID = value;
+        }
+    }
+
+    public int bitrate {
+        get {
+            return Bitrate;
+        }
+        set {
+            Bitrate = value;
+        }
+    }
+
+    public string profiler {
+        get {
+            var profileFrame = (Profilers & ProfilerMaskFrame) != 0;
+            var profileReport = (Profilers & ProfilerMaskReport) != 0;
+
+            if (profileFrame && profileReport) {
+                return "full";
+            }
+            else if (profileFrame) {
+                return "frame";
+            }
+            else if (profileReport) {
+                return "report";
+            }
+            else {
+                return "";
+            }
+        }
+        set {
+            switch (value) {
+                case "full":
+                    Profilers = ProfilerMaskFrame | ProfilerMaskReport;
+                    break;
+                case "frame":
+                    Profilers = ProfilerMaskFrame;
+                    break;
+                case "report":
+                    Profilers = ProfilerMaskReport;
+                    break;
+                default:
+                    Profilers = 0;
+                    break;
+            }
+        }
+    }
+
+    public string profilerLogPostfix {
+        get {
+            return ProfilerLogPostfix;
+        }
+        set {
+            ProfilerLogPostfix = value;
+        }
+    }
 
 	public AirVRProfileBase GetSerializable() {
 		SupportedVideoCodecs = supportedVideoCodecs;

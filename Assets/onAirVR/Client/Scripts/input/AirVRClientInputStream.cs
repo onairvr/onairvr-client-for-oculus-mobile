@@ -1,6 +1,6 @@
 ﻿/***********************************************************
 
-  Copyright (c) 2017-2018 Clicked, Inc.
+  Copyright (c) 2017-present Clicked, Inc.
 
   Licensed under the MIT license found in the LICENSE file 
   in the Docs folder of the distributed package.
@@ -20,6 +20,9 @@ public class AirVRClientInputStream : AirVRInputStream {
 
     [DllImport(AirVRClient.LibPluginName)]
     private static extern void onairvr_UnregisterInputSender(byte id);
+
+    [DllImport(AirVRClient.LibPluginName)]
+    private static extern void onairvr_BeginPendInput(ref long timestamp);
 
     [DllImport(AirVRClient.LibPluginName)]
     private static extern void onairvr_PendInputTouch(byte deviceID, byte controlID, float posX, float posY, float touch, byte policy);
@@ -47,7 +50,7 @@ public class AirVRClientInputStream : AirVRInputStream {
                                                                 ref float worldHitNormalX, ref float worldHitNormalY, ref float worldHitNormalZ);
 
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern void onairvr_SendPendingInputs();
+    private static extern void onairvr_SendPendingInputs(long timestamp);
 
     [DllImport(AirVRClient.LibPluginName)]
     private static extern void onairvr_ResetInput();
@@ -99,10 +102,14 @@ public class AirVRClientInputStream : AirVRInputStream {
     }
 
     // implements AirVRInputStreaming
-    protected override float sendingRatePerSec {
+    protected override float maxSendingRatePerSec {
         get {
-            return 60.0f;
+            return 90.0f;
         }
+    }
+
+    protected override void BeginPendInputImpl(ref long timestamp) {
+        onairvr_BeginPendInput(ref timestamp);
     }
 
     protected override void UnregisterInputSenderImpl(byte id) {
@@ -175,8 +182,8 @@ public class AirVRClientInputStream : AirVRInputStream {
                                                 ref worldHitNormal.x, ref worldHitNormal.y, ref worldHitNormal.z);
     }
 
-    protected override void SendPendingInputEventsImpl() {
-        onairvr_SendPendingInputs();
+    protected override void SendPendingInputEventsImpl(long timestamp) {
+        onairvr_SendPendingInputs(timestamp);
     }
 
     protected override void ResetInputImpl() {
