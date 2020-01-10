@@ -1,6 +1,6 @@
 ﻿/***********************************************************
 
-  Copyright (c) 2017-2018 Clicked, Inc.
+  Copyright (c) 2017-present Clicked, Inc.
 
   Licensed under the MIT license found in the LICENSE file 
   in the root folder of the project.
@@ -31,20 +31,20 @@ public class AirVRClientOVRPointer : MonoBehaviour
 
     public bool isControllerConnected {
         get {
-            return AirVRCamera.IsConnected(AirVRCamera.ParseController(OVRInput.Controller.LTouch)) ||
-                AirVRCamera.IsConnected(AirVRCamera.ParseController(OVRInput.Controller.RTouch));
+            return AirVROVRInputHelper.IsConnected(OVRInput.Controller.LTouch) || 
+                AirVROVRInputHelper.IsConnected(OVRInput.Controller.RTouch);
         }
     }
 
     public OVRInput.Controller controller {
         get {
             OVRInput.Controller controllers = OVRInput.GetConnectedControllers();
-            var right = AirVRCamera.ParseController(OVRInput.Controller.RTouch);
-            if (AirVRCamera.IsConnected(right)) {
+            var right = AirVROVRInputHelper.ParseController(OVRInput.Controller.RTouch);
+            if (AirVROVRInputHelper.IsConnected(right)) {
                 return right;
             }
-            var left = AirVRCamera.ParseController(OVRInput.Controller.LTouch);
-            if (AirVRCamera.IsConnected(left)) {
+            var left = AirVROVRInputHelper.ParseController(OVRInput.Controller.LTouch);
+            if (AirVROVRInputHelper.IsConnected(left)) {
                 return left;
             }
             return OVRInput.GetActiveController();
@@ -65,10 +65,10 @@ public class AirVRClientOVRPointer : MonoBehaviour
 
         Transform newRayTransform;
         if (isControllerConnected) {
-            if (controller == AirVRCamera.ParseController(OVRInput.Controller.RTouch)) {
+            if (controller == AirVROVRInputHelper.ParseController(OVRInput.Controller.RTouch)) {
                 newRayTransform = _rightHandAnchor;
             }
-            else if (controller == AirVRCamera.ParseController(OVRInput.Controller.LTouch)) {
+            else if (controller == AirVROVRInputHelper.ParseController(OVRInput.Controller.LTouch)) {
                 newRayTransform = _leftHandAnchor;
             }
             else {
@@ -98,8 +98,8 @@ public class AirVRClientOVRPointer : MonoBehaviour
                     Quaternion orientation = OVRInput.GetLocalControllerRotation(controller);
 
                     Vector3 localStartPoint = OVRInput.GetLocalControllerPosition(controller);
-                    if (AirVRCamera.headsetType == AirVRCamera.HeadsetType.Quest) {
-                        localStartPoint += orientation * Vector3.forward * 0.04f;
+                    if (AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest) {
+                        localStartPoint += orientation * Vector3.down * 0.01f;
                     }
                     Vector3 localEndPoint = localStartPoint + orientation * Vector3.forward * _maxRayLength;
 

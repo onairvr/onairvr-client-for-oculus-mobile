@@ -1,6 +1,6 @@
 ﻿/***********************************************************
 
-  Copyright (c) 2017-2018 Clicked, Inc.
+  Copyright (c) 2017-present Clicked, Inc.
 
   Licensed under the MIT license found in the LICENSE file 
   in the root folder of the project.
@@ -35,13 +35,13 @@ public class AirVRClientNetworkIndicator : MonoBehaviour
         {
             _elapsedTime = 0f;
 
-            _networkName.text = GetNetworkName().Trim('\"');
+            var (name, level) = GetNetworkStatus(4);
 
-            int signalLevel = GetSignalLevel(4);
+            _networkName.text = name.Trim('\"');
 
             for (int i = 0; i < signalBars.Length; i++)
             {
-                signalBars[i].enabled = i < signalLevel;
+                signalBars[i].enabled = i < level;
             }
         }
 
@@ -50,34 +50,40 @@ public class AirVRClientNetworkIndicator : MonoBehaviour
 #endif
 
 
-    private string GetNetworkName()
+    private (string name, int level) GetNetworkStatus(int numberOfLevels)
     {
-        if (Application.internetReachability == NetworkReachability.ReachableViaCarrierDataNetwork)
-        {
-            return "Cellular";
-        }
+        using (var activity = new AndroidJavaClass("com.unity3d.player.UnityPlayer").GetStatic<AndroidJavaObject>("currentActivity")) {
+            var connectivityManager = activity.Call<AndroidJavaObject>("getSystemService", "connectivity");
+            var activeNetwork = connectivityManager.Call<AndroidJavaObject>("getActiveNetwork");
+            if (activeNetwork == null) {
+                return ("N/A", 0);
+            }
 
-        if (Application.internetReachability == NetworkReachability.ReachableViaLocalAreaNetwork)
-        {         
+            var capabilities = connectivityManager.Call<AndroidJavaObject>("getNetworkCapabilities", activeNetwork);
+            if (capabilities == null) {
+                return ("N/A", 0);
+            }
 
-            using (var activity = new AndroidJavaClass("com.unity3d.player.UnityPlayer").GetStatic<AndroidJavaObject>("currentActivity"))
-            {
+            var wifiManagerClass = new AndroidJavaClass("android.net.wifi.WifiManager");
+            if (capabilities.Call<bool>("hasTransport", 0)) { // cellular
+                var strength = capabilities.Call<int>("getSignalStrength");
+                return (
+                    "Cellular",
+                    wifiManagerClass.CallStatic<int>("calculateSignalLevel", strength, numberOfLevels)
+                );
+            }
+            else if (capabilities.Call<bool>("hasTransport", 1)) { // wifi
                 var wifiManager = activity.Call<AndroidJavaObject>("getSystemService", "wifi");
-                return wifiManager.Call<AndroidJavaObject>("getConnectionInfo").Call<string>("getSSID");
+                var wifiInfo = wifiManager.Call<AndroidJavaObject>("getConnectionInfo");
+                int rssi = wifiInfo.Call<int>("getRssi");
+
+                return (
+                    wifiInfo.Call<string>("getSSID"),
+                    wifiManagerClass.CallStatic<int>("calculateSignalLevel", rssi, numberOfLevels)
+                );
             }
         }
 
-        return "N/A";
-    }
-
-    private int GetSignalLevel(int numberOfLevels)
-    {
-        using (var activity = new AndroidJavaClass("com.unity3d.player.UnityPlayer").GetStatic<AndroidJavaObject>("currentActivity"))
-        {
-            var wifiManager = activity.Call<AndroidJavaObject>("getSystemService", "wifi");
-            var wifiInfo = wifiManager.Call<AndroidJavaObject>("getConnectionInfo");
-            int rssi = wifiInfo.Call<int>("getRssi");
-            return wifiManager.CallStatic<int>("calculateSignalLevel", rssi, numberOfLevels);
-        }
+        return ("N/A", 0);
     }  
 }

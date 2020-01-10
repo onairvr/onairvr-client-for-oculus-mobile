@@ -1,6 +1,6 @@
 ﻿/***********************************************************
 
-  Copyright (c) 2017-2018 Clicked, Inc.
+  Copyright (c) 2017-present Clicked, Inc.
 
   Licensed under the MIT license found in the LICENSE file 
   in the Docs folder of the distributed package.
@@ -17,13 +17,13 @@ public class AirVRProfile : AirVRProfileBase {
 
 	public override int videoWidth { 
         get {
-            return AirVRCamera.headsetType == AirVRCamera.HeadsetType.Quest ? 3840 : 2560;
+            return AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest ? 3264 : 2560;
         }
     }
 
     public override int videoHeight { 
         get {
-            return AirVRCamera.headsetType == AirVRCamera.HeadsetType.Quest ? 1920 : 1280;
+            return AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest ? 1632: 1280;
         }
     }
 
@@ -142,7 +142,7 @@ public class AirVRProfile : AirVRProfileBase {
 
 	public override float delayToResumePlayback {
 		get {
-			return 4.0f;
+			return 1.5f;
 		}
 	}
 }

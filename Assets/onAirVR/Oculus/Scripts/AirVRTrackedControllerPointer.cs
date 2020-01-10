@@ -1,6 +1,6 @@
 ﻿/***********************************************************
 
-  Copyright (c) 2017-2018 Clicked, Inc.
+  Copyright (c) 2017-present Clicked, Inc.
 
   Licensed under the MIT license found in the LICENSE file 
   in the Docs folder of the distributed package.
@@ -15,27 +15,27 @@ public class AirVRTrackedControllerPointer : AirVRPointer {
 	// implements AirVRPointerBase
     protected override string inputDeviceName {
         get {
-            return AirVRInputDeviceName.TrackedController;
+            return AirVRInputDeviceName.RightHandTracker;
         }
     }
 
     protected override byte raycastHitResultKey {
         get {
-            return (byte)AirVRTrackedControllerKey.RaycastHitResult;
+            return (byte)AirVRRightHandTrackerKey.RaycastHitResult;
         }
     }
 
     protected override Vector3 worldOriginPosition {
         get {
-            bool leftHanded = (OVRInput.GetConnectedControllers() & OVRInput.Controller.LTrackedRemote) != 0;
-            return trackingOriginLocalToWorldMatrix.MultiplyPoint(OVRInput.GetLocalControllerPosition(leftHanded ? OVRInput.Controller.LTrackedRemote : OVRInput.Controller.RTrackedRemote));
+            return trackingOriginLocalToWorldMatrix.MultiplyPoint(
+                OVRInput.GetLocalControllerPosition(AirVROVRInputHelper.ParseController(OVRInput.Controller.RTouch))
+            );
         }
     }
 
     protected override Quaternion worldOriginOrientation {
         get {
-            bool leftHanded = (OVRInput.GetConnectedControllers() & OVRInput.Controller.LTrackedRemote) != 0;
-            return cameraRoot.rotation * OVRInput.GetLocalControllerRotation(leftHanded ? OVRInput.Controller.LTrackedRemote : OVRInput.Controller.RTrackedRemote);
+            return cameraRoot.rotation * OVRInput.GetLocalControllerRotation(AirVROVRInputHelper.ParseController(OVRInput.Controller.RTouch));
         }
     }
 }

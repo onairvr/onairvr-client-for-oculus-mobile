@@ -1,31 +1,31 @@
 ﻿/***********************************************************
 
-  Copyright (c) 2017-2018 Clicked, Inc.
+  Copyright (c) 2017-present Clicked, Inc.
 
   Licensed under the MIT license found in the LICENSE file 
   in the root folder of the project.
 
  ***********************************************************/
 
-using System.Text;
 using UnityEngine;
-using UnityEngine.VR;
+using UnityEngine.XR;
 
-public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClient.EventHandler
-{    
-    [SerializeField] private GameObject _room;
-    [SerializeField][RangeAttribute(0.5f, 2.0f)] private float _renderScale = 1f;
+public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClient.EventHandler {    
+    [SerializeField][Range(0.5f, 2.0f)] private float _renderScale = 1f;
+
+    private GameObject _room;
+    private Light _envLight;
+    private AirVRRealWorldSpaceSetup _realWorldSpaceSetup;
 
     private bool _lastUserPresent = false;
-    private Light _envLight;
 
     public bool IsConnecting { get; private set; }
     public AirVRClientNotification Notification { get; private set; }
     public AirVRClientAppConfig Config { get; private set; }
     public AirVRClientInputModule InputModule { get; private set; }
 
-    private void Awake()
-    {
+    private void Awake() {
+        _room = transform.Find("Room").gameObject;
         _envLight = transform.Find("EnvLight").GetComponent<Light>();
 
         Notification = FindObjectOfType<AirVRClientNotification>();
@@ -35,31 +35,43 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
         AirVRClient.Delegate = this;
     }
 
-    private void Start()
-    {
-        UnityEngine.XR.XRSettings.eyeTextureResolutionScale = _renderScale;
+    private void Start() {
+        XRSettings.eyeTextureResolutionScale = _renderScale;
 
-        if (Config.FirstPlay)
-        {            
+        if (Config.FirstPlay) {            
             AirVRClientUIManager.Instance.GuidePanel.StartGuide();
         }
     }
 
-    private void Update()
-    {    
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            if(IsConnecting)
+    private void Update() {
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            if (IsConnecting) {
                 OnDisconnected();
+            }
+        }
+
+        // TODO remove real world space setup
+        if (OVRInput.GetDown(OVRInput.Button.SecondaryThumbstick)) {
+            if (_realWorldSpaceSetup == null) {
+                _realWorldSpaceSetup = new GameObject("RealWorldSpaceSetup").AddComponent<AirVRRealWorldSpaceSetup>();
+                _realWorldSpaceSetup.transform.position = Vector3.zero;
+                _realWorldSpaceSetup.transform.rotation = Quaternion.identity;
+
+                _room.SetActive(false);
+            }
+            else {
+                Destroy(_realWorldSpaceSetup.gameObject);
+                _realWorldSpaceSetup = null;
+
+                _room.SetActive(true);
+            }
         }
     }
 
-    public void Connect(string addressText, string portText, string userIDText)
-    {   
+    public void Connect(string addressText, string portText, string userIDText) {   
         string message;
 
-        if (!AirVRClientAppConfig.ValidateIPv4(addressText))
-        {
+        if (!AirVRClientAppConfig.ValidateIPv4(addressText)) {
             message = "Please enter the correct ip address.";
 
             Notification.DisplayError(message);
@@ -67,8 +79,7 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
             return;
         }
 
-        if (!AirVRClientAppConfig.ValidatePort(portText))
-        {
+        if (!AirVRClientAppConfig.ValidatePort(portText)) {
             message = "Please enter the correct port.";
 
             Notification.DisplayError(message);
@@ -76,8 +87,7 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
             return;
         }
 
-        if (!AirVRClientAppConfig.ValidateUserID(userIDText))
-        {
+        if (!AirVRClientAppConfig.ValidateUserID(userIDText)) {
             message = "Please enter the correct User ID.";
 
             Notification.DisplayError(message);
@@ -103,8 +113,7 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
 #endif
     }
 
-    private void OnDisconnected()
-    {
+    private void OnDisconnected() {
         _envLight.enabled = true;
 
         if (!_room.activeSelf)
@@ -128,8 +137,7 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
     // implements AirVRClient.EventHandler
     public void AirVRClientFailed(string reason) { }
 
-    public void AirVRClientConnected()
-    {
+    public void AirVRClientConnected() {
         _room.SetActive(false);
         IsConnecting = false;
         AirVRClientUIManager.Instance.Hide();
@@ -142,8 +150,7 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
     
     public void AirVRClientPlaybackStopped() { }
 
-    public void AirVRClientDisconnected()
-    {
+    public void AirVRClientDisconnected() {
         OnDisconnected();
     }
 

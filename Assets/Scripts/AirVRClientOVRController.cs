@@ -1,6 +1,6 @@
 ﻿/***********************************************************
 
-  Copyright (c) 2017-2018 Clicked, Inc.
+  Copyright (c) 2017-present Clicked, Inc.
 
   Licensed under the MIT license found in the LICENSE file 
   in the root folder of the project.
@@ -19,8 +19,8 @@ public class AirVRClientOVRController : MonoBehaviour
     private bool _prevControllerConnectedCached = false;
 
     void Update()
-    {                   
-        bool controllerConnected = OVRInput.IsControllerConnected(_controller);
+    {
+        bool controllerConnected = AirVROVRInputHelper.IsConnected(_controller);
 
 #if UNITY_ANDROID && !UNITY_EDITOR
         controllerConnected = controllerConnected && !AirVRClient.connected;

@@ -1,6 +1,6 @@
 /***********************************************************
 
-  Copyright (c) 2017-2018 Clicked, Inc.
+  Copyright (c) 2017-present Clicked, Inc.
 
   Licensed under the MIT license found in the LICENSE file 
   in the Docs folder of the distributed package.
@@ -73,15 +73,23 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
 	public static EventHandler Delegate { private get; set; }
 
 	public static bool connected {
-		get { 
+		get {
+#if !UNITY_EDITOR && UNITY_ANDROID
 			return onairvr_IsConnected();
-		}
+#else
+            return false;
+#endif
+        }
 	}
 
 	public static bool playing {
-		get { 
-			return onairvr_IsPlaying();
-		}
+		get {
+#if !UNITY_EDITOR && UNITY_ANDROID
+            return onairvr_IsPlaying();
+#else
+            return false;
+#endif
+        }
 	}
 
     public static void LoadOnce(AirVRProfileBase profile, AirVRCameraBase camera) {
@@ -95,16 +103,24 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
                 _instance._videoFrameRenderer = new AirVRVideoFrameRenderer(go, profile, camera);
             }
 
-			onairvr_SetProfile(JsonUtility.ToJson(profile.GetSerializable()));
+#if !UNITY_EDITOR && UNITY_ANDROID
+            onairvr_SetProfile(JsonUtility.ToJson(profile.GetSerializable()));
+#endif
         }
     }
 
-    public static void Connect(string address, int port, string userID = "") {
+    public static void Connect(string address, int port, string userID = "", int bitrate = 0, string profiler = "", string profilerLogPostfix = "") {
 		if (_instance != null) {
 			_instance._profile.userID = userID;
+            _instance._profile.bitrate = bitrate;
+            _instance._profile.profiler = profiler;
+            _instance._profile.profilerLogPostfix = profilerLogPostfix;
+
 			onairvr_SetProfile(JsonUtility.ToJson(_instance._profile.GetSerializable()));
 
+#if !UNITY_EDITOR && UNITY_ANDROID
 			onairvr_RequestConnect(address, port);
+#endif
 		}
     }
 

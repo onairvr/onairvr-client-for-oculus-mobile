@@ -1,6 +1,6 @@
 ﻿/***********************************************************
 
-  Copyright (c) 2017-2018 Clicked, Inc.
+  Copyright (c) 2017-present Clicked, Inc.
 
   Licensed under the MIT license found in the LICENSE file 
   in the root folder of the project.
@@ -25,7 +25,11 @@ public class AirVRClientPanelGuide : AirVRClientPanel
 
 	private void Update ()
     {
-        if (OVRInput.GetDown(OVRInput.Button.One) || OVRInput.GetDown(OVRInput.Button.DpadRight) || Input.GetKeyDown(KeyCode.X) || Input.GetKeyDown(KeyCode.LeftControl))
+        if (OVRInput.GetDown(OVRInput.Button.One) || 
+            OVRInput.GetDown(OVRInput.Button.DpadRight) || 
+            OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger) ||
+            Input.GetKeyDown(KeyCode.X) || 
+            Input.GetKeyDown(KeyCode.LeftControl))
         {
             NextPage();
         }
