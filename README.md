@@ -12,10 +12,8 @@ onAirVR consists of two applications - mobile VR client app & content app on PC.
 
 Please ensure you have right hardwares :
 
-* **Google Daydream** or **Oculus Mobile** device
+* **Oculus Mobile** device
 * **Windows** desktop powered by **NVIDIA graphics**
-
-If you have a Google Daydream device, check [onAirVR Client for Google VR](https://github.com/onairvr/onairvr-client-for-googlevr).
 
 This plugin is for client app development, and the plugins for PC content app are belows :
 
