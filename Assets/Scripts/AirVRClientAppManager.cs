@@ -13,6 +13,7 @@ using UnityEngine.XR;
 public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClient.EventHandler {    
     [SerializeField][Range(0.5f, 2.0f)] private float _renderScale = 1f;
 
+    private AirVRCamera _camera;
     private GameObject _room;
     private Light _envLight;
     private AirVRRealWorldSpaceSetup _realWorldSpaceSetup;
@@ -25,6 +26,7 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
     public AirVRClientInputModule InputModule { get; private set; }
 
     private void Awake() {
+        _camera = FindObjectOfType<AirVRCamera>();
         _room = transform.Find("Room").gameObject;
         _envLight = transform.Find("EnvLight").GetComponent<Light>();
 
@@ -108,8 +110,10 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
         IsConnecting = true;
         Notification.DisplayConnecting();
 
+        _camera.profile.userID = userID.ToString();
+
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AirVRClient.Connect(address, port, userID.ToString());
+        AirVRClient.Connect(address, port);
 #endif
     }
 

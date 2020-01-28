@@ -100,7 +100,7 @@ public abstract class AirVRProfileBase {
 
     public abstract int videoWidth { get; }
     public abstract int videoHeight { get; }
-    public abstract float videoFrameRate { get; }
+    public abstract float defaultVideoFrameRate { get; }
     public abstract bool stereoscopy { get; }
     public abstract float[] leftEyeCameraNearPlane { get; }
     public abstract Vector3 eyeCenterPosition { get; }
@@ -169,6 +169,15 @@ public abstract class AirVRProfileBase {
         }
         set {
             UserID = value;
+        }
+    }
+
+    public float videoFrameRate {
+        get {
+            return VideoFrameRate;
+        }
+        set {
+            VideoFrameRate = value;
         }
     }
 
@@ -244,7 +253,11 @@ public abstract class AirVRProfileBase {
 		VideoRenderMeshIndices = videoRenderMeshIndices;
 		VideoScale = videoScale;
 
-		return this;
+        if (VideoFrameRate <= 0.0f) {
+            VideoFrameRate = defaultVideoFrameRate;
+        }
+
+        return this;
 	}
 
     public override string ToString () {

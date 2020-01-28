@@ -28,9 +28,9 @@ public abstract class AirVRCameraBase : MonoBehaviour {
     protected HeadTrackerInputDevice headTracker { get; private set; } 
     protected GameObject defaultTrackedControllerModel { get; private set; }
 
-    protected abstract AirVRProfileBase profile { get; }
     protected abstract void RecenterPose();
 
+    public abstract AirVRProfileBase profile { get; }
     public abstract Matrix4x4 trackingSpaceToWorldMatrix { get; }
 
     protected virtual void Awake() {

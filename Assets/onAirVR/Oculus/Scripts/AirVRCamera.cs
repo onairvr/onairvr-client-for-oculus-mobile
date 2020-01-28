@@ -69,7 +69,7 @@ public class AirVRCamera : AirVRCameraBase {
         }
     }
 
-    protected override AirVRProfileBase profile => _profile;
+    public override AirVRProfileBase profile => _profile;
 
     protected override void RecenterPose() {
         OVRManager.display.RecenterPose();

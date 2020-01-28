@@ -109,13 +109,8 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
         }
     }
 
-    public static void Connect(string address, int port, string userID = "", int bitrate = 0, string profiler = "", string profilerLogPostfix = "") {
+    public static void Connect(string address, int port) {
 		if (_instance != null) {
-			_instance._profile.userID = userID;
-            _instance._profile.bitrate = bitrate;
-            _instance._profile.profiler = profiler;
-            _instance._profile.profilerLogPostfix = profilerLogPostfix;
-
 			onairvr_SetProfile(JsonUtility.ToJson(_instance._profile.GetSerializable()));
 
 #if !UNITY_EDITOR && UNITY_ANDROID

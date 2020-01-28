@@ -27,7 +27,7 @@ public class AirVRProfile : AirVRProfileBase {
         }
     }
 
-    public override float videoFrameRate {
+    public override float defaultVideoFrameRate {
         get {
 #if !UNITY_EDITOR && UNITY_ANDROID
             AndroidJavaClass jc = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
