@@ -25,7 +25,7 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
         void AirVRClientUserDataReceived(byte[] userData);
 	}
 
-    public const string LibPluginName = "onAirVRClientPlugin";
+    public const string LibPluginName = "ocs";
 
 	private static AirVRClient _instance;
     private static AirVRClientEventDispatcher _eventDispatcher;

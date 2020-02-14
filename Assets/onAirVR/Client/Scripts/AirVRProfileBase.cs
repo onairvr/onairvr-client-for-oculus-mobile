@@ -24,7 +24,7 @@ public abstract class AirVRProfileBase {
 
 #pragma warning disable CS0414
     [SerializeField] private string UserID;
-    [SerializeField] private int Bitrate;
+    [SerializeField] private int VideoBitrate;
     [SerializeField] private int Profilers;
     [SerializeField] private string ProfilerLogPostfix;
     [SerializeField] private string[] SupportedVideoCodecs;
@@ -39,9 +39,6 @@ public abstract class AirVRProfileBase {
 
     [SerializeField] private int[] LeftEyeViewport;
     [SerializeField] private int[] RightEyeViewport;
-    [SerializeField] private float[] VideoRenderMeshVertices;
-    [SerializeField] private float[] VideoRenderMeshTexCoords;
-    [SerializeField] private int[] VideoRenderMeshIndices;
     [SerializeField] private float[] VideoScale;
 #pragma warning restore CS0414
 
@@ -98,8 +95,7 @@ public abstract class AirVRProfileBase {
         }
     }
 
-    public abstract int videoWidth { get; }
-    public abstract int videoHeight { get; }
+    public abstract (int width, int height) videoResolution { get; }
     public abstract float defaultVideoFrameRate { get; }
     public abstract bool stereoscopy { get; }
     public abstract float[] leftEyeCameraNearPlane { get; }
@@ -181,12 +177,12 @@ public abstract class AirVRProfileBase {
         }
     }
 
-    public int bitrate {
+    public int videoBitrate {
         get {
-            return Bitrate;
+            return VideoBitrate;
         }
         set {
-            Bitrate = value;
+            VideoBitrate = value;
         }
     }
 
@@ -236,10 +232,12 @@ public abstract class AirVRProfileBase {
     }
 
 	public AirVRProfileBase GetSerializable() {
+        var resolution = videoResolution;
+
 		SupportedVideoCodecs = supportedVideoCodecs;
 		SupportedAudioCodecs = supportedAudioCodecs;
-		VideoWidth = videoWidth;
-		VideoHeight = videoHeight;
+		VideoWidth = resolution.width;
+		VideoHeight = resolution.height;
 		VideoFrameRate = videoFrameRate;
         IPD = ipd;
 		Stereoscopy = stereoscopy;
@@ -248,9 +246,6 @@ public abstract class AirVRProfileBase {
 
 		LeftEyeViewport = leftEyeViewport;
 		RightEyeViewport = rightEyeViewport;
-		VideoRenderMeshVertices = videoRenderMeshVertices;
-		VideoRenderMeshTexCoords = videoRenderMeshTexCoords;
-		VideoRenderMeshIndices = videoRenderMeshIndices;
 		VideoScale = videoScale;
 
         if (VideoFrameRate <= 0.0f) {
@@ -261,6 +256,8 @@ public abstract class AirVRProfileBase {
 	}
 
     public override string ToString () {
+        var resolution = videoResolution;
+
         return string.Format("[AirVRProfile]\n" +
                              "    videoWidth={0}\n" +
                              "    videoHeight={1}\n" +
@@ -273,8 +270,8 @@ public abstract class AirVRProfileBase {
                              "    eyeCenterPosition={18}\n" + 
                              "    ipd={19}\n" + 
                              "    stereoscopy={20}\n", 
-                             videoWidth, 
-                             videoHeight, 
+                             resolution.width, 
+                             resolution.height, 
                              videoFrameRate, 
                              videoScale[0], videoScale[1], 
                              renderType, 

@@ -15,15 +15,14 @@ using UnityEngine.Assertions.Comparers;
 public class AirVRProfile : AirVRProfileBase {
 	private bool _userPresent;
 
-	public override int videoWidth { 
+    public override (int width, int height) videoResolution {
         get {
-            return AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest ? 3264 : 2560;
-        }
-    }
-
-    public override int videoHeight { 
-        get {
-            return AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest ? 1632: 1280;
+            if (AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest) {
+                return OVRManager.boundary.GetConfigured() ? (3200, 1600) : (2400, 1200);
+            }
+            else {
+                return (2560, 1280);
+            }
         }
     }
 
@@ -93,36 +92,6 @@ public class AirVRProfile : AirVRProfileBase {
 	public override int[] rightEyeViewport { 
 		get {
 			return leftEyeViewport;
-		}
-	}
-
-	public override float[] videoRenderMeshVertices { 
-		get { 
-			return new float[] { 
-				-0.5f,  0.5f, 0.0f,
-				 0.5f,  0.5f, 0.0f,
-				-0.5f, -0.5f, 0.0f,
-				 0.5f, -0.5f, 0.0f 
-			};
-		}
-	}
-
-	public override float[] videoRenderMeshTexCoords { 
-		get { 
-			return new float[] {
-				0.0f, 1.0f,
-				1.0f, 1.0f,
-				0.0f, 0.0f,
-				1.0f, 0.0f
-			};
-		}
-	}
-
-	public override int[] videoRenderMeshIndices { 
-		get { 
-			return new int[] {
-				0, 1, 2, 2, 1, 3
-			};
 		}
 	}
 
