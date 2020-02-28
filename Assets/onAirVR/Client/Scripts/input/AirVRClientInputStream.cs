@@ -25,9 +25,6 @@ public class AirVRClientInputStream : AirVRInputStream {
     private static extern void onairvr_BeginPendInput(ref long timestamp);
 
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern void onairvr_PendInputTouch(byte deviceID, byte controlID, float posX, float posY, float touch, byte policy);
-
-    [DllImport(AirVRClient.LibPluginName)]
     private static extern void onairvr_PendInputTransform(byte deviceID, byte controlID, float posX, float posY, float posZ, 
                                                           float rotX, float rotY, float rotZ, float rotW, byte policy);
 
@@ -114,10 +111,6 @@ public class AirVRClientInputStream : AirVRInputStream {
 
     protected override void UnregisterInputSenderImpl(byte id) {
         onairvr_UnregisterInputSender(id);
-    }
-
-    protected override void PendInputTouchImpl(byte deviceID, byte controlID, Vector2 position, float touch, byte policy) {
-        onairvr_PendInputTouch(deviceID, controlID, position.x, position.y, touch, policy);
     }
 
     protected override void PendInputTransformImpl(byte deviceID, byte controlID, Vector3 position, Quaternion orientation, byte policy) {

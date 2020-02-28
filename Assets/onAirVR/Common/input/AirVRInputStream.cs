@@ -76,7 +76,6 @@ public abstract class AirVRInputStream {
 
     protected abstract void BeginPendInputImpl(ref long timestamp);
 
-    protected abstract void PendInputTouchImpl(byte deviceID, byte controlID, Vector2 position, float touch, byte policy);
     protected abstract void PendInputTransformImpl(byte deviceID, byte controlID, Vector3 position, Quaternion orientation, byte policy);
     protected abstract void PendTrackedDeviceFeedbackImpl(byte deviceID, byte controlID, 
                                                           Vector3 worldRayOrigin, Vector3 worldHitPosition, Vector3 worldHitNormal, byte policy); 
@@ -145,7 +144,8 @@ public abstract class AirVRInputStream {
     public void PendTouch(AirVRInputSender sender, byte controlID, Vector2 position, bool touch) {
         Assert.IsTrue(sender.isRegistered);
 
-        PendInputTouchImpl((byte)sender.deviceID, controlID, position, touch ? 1.0f : 0.0f, (byte)SendingPolicy.NonzeroAlwaysZeroOnce);
+        var value = new Vector3(position.x, position.y, touch ? 1.0f : 0.0f);
+        PendInputFloat3Impl((byte)sender.deviceID, controlID, value, (byte)SendingPolicy.NonzeroAlwaysZeroOnce);
     }
 
     public void GetTouch(AirVRInputReceiver receiver, byte controlID, out Vector2 position, out bool touch) {
