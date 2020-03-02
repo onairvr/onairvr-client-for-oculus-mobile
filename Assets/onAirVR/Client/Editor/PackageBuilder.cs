@@ -22,9 +22,9 @@ public class PackageBuilder {
             assets.Add(AssetDatabase.GUIDToAssetPath(guid));
         }
         assets.Add("Assets/Plugins/Android/assets/client.license");
-        assets.Add("Assets/Plugins/Android/onAirVRClientPlugin.jar");
+        assets.Add("Assets/Plugins/Android/libocs.so");
+        assets.Add("Assets/Plugins/Android/ocs.jar");
         assets.Add("Assets/Plugins/Android/kotlin-stdlib.jar");
-        assets.Add("Assets/Plugins/Android/libonAirVRClientPlugin.so");
         AssetDatabase.ExportPackage(assets.ToArray(), targetPath);
 
         EditorUtility.DisplayDialog("Congratulation!", "The package is exported successfully.", "Thanks.");
