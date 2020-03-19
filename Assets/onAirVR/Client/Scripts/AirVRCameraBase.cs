@@ -25,8 +25,9 @@ public abstract class AirVRCameraBase : MonoBehaviour {
     [SerializeField] private bool _enableAudio = true;
     [SerializeField] private AudioMixerGroup _audioMixerGroup;
 
-    protected HeadTrackerInputDevice headTracker { get; private set; } 
-    protected GameObject defaultTrackedControllerModel { get; private set; }
+    protected HeadTrackerInputDevice headTracker { get; private set; }
+    protected GameObject defaultLeftControllerModel { get; private set; }
+    protected GameObject defaultRightControllerModel { get; private set; }
 
     protected abstract void RecenterPose();
 
@@ -60,7 +61,8 @@ public abstract class AirVRCameraBase : MonoBehaviour {
     }
 
     protected virtual void Start() {
-        defaultTrackedControllerModel = Resources.Load<GameObject>("trackedControllerModel");
+        defaultLeftControllerModel = Resources.Load<GameObject>("LeftControllerModel");
+        defaultRightControllerModel = Resources.Load<GameObject>("RightControllerModel");
         
         _renderCommand = RenderCommand.Create(profile, _camera);
 
@@ -84,12 +86,12 @@ public abstract class AirVRCameraBase : MonoBehaviour {
             if (_renderingRight == false) {
                 var (_, rotation) = headTracker.GetHeadPose(_thisTransform);
 
-                onairvr_SetCameraOrientation(rotation.x, rotation.y, rotation.z, rotation.w, ref _viewNumber);
-                GL.IssuePluginEvent(onairvr_PreRenderVideoFrame_RenderThread_Func(), _viewNumber);
+                ocs_SetCameraOrientation(rotation.x, rotation.y, rotation.z, rotation.w, ref _viewNumber);
+                GL.IssuePluginEvent(ocs_PreRenderVideoFrame_RenderThread_Func(), _viewNumber);
             }
 
             // clear color the texture only for the right eye when using single texture for the two eyes
-            _renderCommand.Issue(onairvr_RenderVideoFrame_RenderThread_Func(),
+            _renderCommand.Issue(ocs_RenderVideoFrame_RenderThread_Func(),
                                  renderEvent(_renderingRight ? FrameType.StereoRight : FrameType.StereoLeft, 
                                              profile.useSingleTextureForEyes == false || _renderingRight == false));
         }
@@ -114,7 +116,7 @@ public abstract class AirVRCameraBase : MonoBehaviour {
             _renderingRight = false;
 
 #if !UNITY_EDITOR && UNITY_ANDROID
-            GL.IssuePluginEvent(onairvr_EndOfRenderFrame_RenderThread_Func(), 0);
+            GL.IssuePluginEvent(ocs_EndOfRenderFrame_RenderThread_Func(), 0);
 #endif
         }
     }
@@ -124,7 +126,7 @@ public abstract class AirVRCameraBase : MonoBehaviour {
             if (message.Name.Equals(AirVRClientMessage.NameConnected)) {
                 saveCameraClipPlanes();
                 
-                onairvr_EnableNetworkTimeWarp(true);
+                ocs_EnableNetworkTimeWarp(true);
             }
             else if (message.Name.Equals(AirVRClientMessage.NameDisconnected)) {
                 restoreCameraClipPlanes();
@@ -135,7 +137,7 @@ public abstract class AirVRCameraBase : MonoBehaviour {
                 setCameraClipPlanes(message.NearClip, message.FarClip);
             }
             else if (message.Name.Equals(AirVRClientMessage.NameEnableNetworkTimeWarp)) {
-                onairvr_EnableNetworkTimeWarp(message.Enable);
+                ocs_EnableNetworkTimeWarp(message.Enable);
             }
         }
         else if (message.IsInputStreamEvent() && message.Name.Equals(AirVRClientMessage.NameRecenterPose)) {
@@ -197,19 +199,19 @@ public abstract class AirVRCameraBase : MonoBehaviour {
     }
 
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern void onairvr_EnableNetworkTimeWarp(bool enable);
+    private static extern void ocs_EnableNetworkTimeWarp(bool enable);
 
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern void onairvr_SetCameraOrientation(float x, float y, float z, float w, ref int viewNumber);
+    private static extern void ocs_SetCameraOrientation(float x, float y, float z, float w, ref int viewNumber);
 
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern System.IntPtr onairvr_PreRenderVideoFrame_RenderThread_Func();
+    private static extern System.IntPtr ocs_PreRenderVideoFrame_RenderThread_Func();
 
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern System.IntPtr onairvr_RenderVideoFrame_RenderThread_Func();
+    private static extern System.IntPtr ocs_RenderVideoFrame_RenderThread_Func();
 
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern System.IntPtr onairvr_EndOfRenderFrame_RenderThread_Func();
+    private static extern System.IntPtr ocs_EndOfRenderFrame_RenderThread_Func();
 
     private const uint RenderEventMaskClearColor = 0x00800000U;
 

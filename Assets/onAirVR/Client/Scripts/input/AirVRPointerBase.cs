@@ -257,7 +257,7 @@ public abstract class AirVRPointerBase : MonoBehaviour {
 		if (createRay) {
 			Material mat = new Material(Shader.Find("onAirVR/Unlit vertex color"));
 
-			_ray = gameObject.AddComponent<LineRenderer>();
+			_ray = _body.gameObject.AddComponent<LineRenderer>();
 			_ray.positionCount = RayPositions.Length;
 			_ray.receiveShadows = false;
 			_ray.material = mat;

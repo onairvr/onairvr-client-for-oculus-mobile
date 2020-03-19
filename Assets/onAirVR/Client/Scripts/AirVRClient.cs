@@ -32,40 +32,40 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
     private static bool _checkCopyright;
 
 	[DllImport(LibPluginName)]
-	private static extern void onairvr_SetProfile(string profile);
+	private static extern void ocs_SetProfile(string profile);
 
 	[DllImport(LibPluginName)]
-	private static extern int onairvr_Init(string licenseFilePath, int audioOutputSampleRate, bool hasInput);
+	private static extern int ocs_Init(string licenseFilePath, int audioOutputSampleRate, bool hasInput);
 
     [DllImport(LibPluginName)]
-    private static extern void onairvr_RequestConnect(string address, int port);
+    private static extern void ocs_RequestConnect(string address, int port);
 
 	[DllImport(LibPluginName)]
-	private static extern void onairvr_RequestPlay();
+	private static extern void ocs_RequestPlay();
 
 	[DllImport(LibPluginName)]
-	private static extern void onairvr_RequestStop();
+	private static extern void ocs_RequestStop();
 
 	[DllImport(LibPluginName)]
-	private static extern void onairvr_RequestDisconnect();
+	private static extern void ocs_RequestDisconnect();
 	
 	[DllImport(LibPluginName)]
-	private static extern void onairvr_Cleanup();
+	private static extern void ocs_Cleanup();
 
 	[DllImport(LibPluginName)]
-	private static extern bool onairvr_IsConnected();
+	private static extern bool ocs_IsConnected();
 
 	[DllImport(LibPluginName)]
-	private static extern bool onairvr_IsPlaying();
+	private static extern bool ocs_IsPlaying();
 
     [DllImport(LibPluginName)]
-    private static extern IntPtr onairvr_PrepareRender_RenderThread_Func();
+    private static extern IntPtr ocs_PrepareRender_RenderThread_Func();
 
     [DllImport(LibPluginName)]
-    private static extern bool onairvr_GetVideoRenderTargetTexture(ref System.IntPtr texture, ref int width, ref int height);
+    private static extern bool ocs_GetVideoRenderTargetTexture(ref System.IntPtr texture, ref int width, ref int height);
 
 	[DllImport(LibPluginName)]
-	private static extern void onairvr_EnableCopyrightCheck(bool enable);
+	private static extern void ocs_EnableCopyrightCheck(bool enable);
 
 	public delegate void OnAirVRMessageReceiveHandler(AirVRClientMessage messsage);
 	public static event OnAirVRMessageReceiveHandler MessageReceived;
@@ -75,7 +75,7 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
 	public static bool connected {
 		get {
 #if !UNITY_EDITOR && UNITY_ANDROID
-			return onairvr_IsConnected();
+			return ocs_IsConnected();
 #else
             return false;
 #endif
@@ -85,7 +85,7 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
 	public static bool playing {
 		get {
 #if !UNITY_EDITOR && UNITY_ANDROID
-            return onairvr_IsPlaying();
+            return ocs_IsPlaying();
 #else
             return false;
 #endif
@@ -104,17 +104,17 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
             }
 
 #if !UNITY_EDITOR && UNITY_ANDROID
-            onairvr_SetProfile(JsonUtility.ToJson(profile.GetSerializable()));
+            ocs_SetProfile(JsonUtility.ToJson(profile.GetSerializable()));
 #endif
         }
     }
 
     public static void Connect(string address, int port) {
 		if (_instance != null) {
-			onairvr_SetProfile(JsonUtility.ToJson(_instance._profile.GetSerializable()));
+			ocs_SetProfile(JsonUtility.ToJson(_instance._profile.GetSerializable()));
 
 #if !UNITY_EDITOR && UNITY_ANDROID
-			onairvr_RequestConnect(address, port);
+			ocs_RequestConnect(address, port);
 #endif
 		}
     }
@@ -132,7 +132,7 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
 	}
 
 	public static void Disconnect() {
-		onairvr_RequestDisconnect();
+		ocs_RequestDisconnect();
 	}
 
 	public static void SendUserData(byte[] data) {
@@ -167,7 +167,7 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
             throw new UnityException("[ERROR] Must set AirVRClient.Delegate.");
         }
         AirVRClientLicenseFile licenseFile = new AirVRClientLicenseFile("client.license");
-        int result = onairvr_Init(licenseFile.path, AudioSettings.outputSampleRate, _profile.hasInput);
+        int result = ocs_Init(licenseFile.path, AudioSettings.outputSampleRate, _profile.hasInput);
         if (result < 0 && result != -4) {
             Delegate.AirVRClientFailed("failed to init AirVRClient : " + result);
         }
@@ -207,7 +207,7 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
         if (_eventDispatcher != null) {
             _eventDispatcher.MessageReceived -= onAirVRMessageReceived;
         }
-		onairvr_Cleanup();
+		ocs_Cleanup();
 	}
 
 	// handle AirVRMessages
@@ -242,7 +242,7 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
 	}
 	
     private void onAirVRSetupResponded(AirVRClientMessage message) {
-		GL.IssuePluginEvent(onairvr_PrepareRender_RenderThread_Func(), _profile.useSeperateVideoRenderTarget ? 1 : 0);
+		GL.IssuePluginEvent(ocs_PrepareRender_RenderThread_Func(), _profile.useSeperateVideoRenderTarget ? 1 : 0);
 	}
 
     private void onAirVRRenderPrepared(AirVRClientMessage message) {
@@ -250,7 +250,7 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
             System.IntPtr texture = System.IntPtr.Zero;
             int width = 0, height = 0;
 
-            if (onairvr_GetVideoRenderTargetTexture(ref texture, ref width, ref height)) {
+            if (ocs_GetVideoRenderTargetTexture(ref texture, ref width, ref height)) {
                 _videoFrameRenderer.SetVideoFrameTexture(Texture2D.CreateExternalTexture(width, height, TextureFormat.RGBA32, false, false, texture));
                 _videoFrameRenderer.enabled = true;
             }
@@ -284,10 +284,10 @@ public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {
 	
 	// implements AirVRClientStateMachine.Context
 	void AirVRClientStateMachine.Context.RequestPlay() {
-		onairvr_RequestPlay();
+		ocs_RequestPlay();
 	}
 
 	void AirVRClientStateMachine.Context.RequestStop() {
-		onairvr_RequestStop();
+		ocs_RequestStop();
 	}
 }

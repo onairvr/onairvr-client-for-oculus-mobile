@@ -15,7 +15,7 @@ using System.Runtime.InteropServices;
 
 public class AirVRCamera : AirVRCameraBase {
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern void onairvr_InitJNI();
+    private static extern void ocs_InitJNI();
 
     private static AirVRCamera _instance;
 
@@ -32,7 +32,7 @@ public class AirVRCamera : AirVRCameraBase {
     protected override void Awake () {
         // Work around : Only the game module can access to java classes in onAirVR client plugin.
         if (Application.isEditor == false && Application.platform == RuntimePlatform.Android) {
-            onairvr_InitJNI();
+            ocs_InitJNI();
         }
         
         base.Awake();
@@ -50,8 +50,8 @@ public class AirVRCamera : AirVRCameraBase {
         AirVRInputManager.RegisterInputDevice(_rightHandTracker);
         AirVRInputManager.RegisterInputDevice(new AirVRControllerInputDevice());
 
-        gameObject.AddComponent<AirVRGazePointer>();
-		gameObject.AddComponent<AirVRTrackedControllerPointer>().Configure(defaultTrackedControllerModel, true);
+        gameObject.AddComponent<AirVRLeftHandTrackerPointer>().Configure(defaultLeftControllerModel, true);
+        gameObject.AddComponent<AirVRRightHandTrackerPointer>().Configure(defaultRightControllerModel, true);
 
         if (_preferRealWorldSpace && 
             AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest) {
