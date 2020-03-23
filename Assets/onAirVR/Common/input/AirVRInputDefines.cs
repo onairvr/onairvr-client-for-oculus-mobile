@@ -26,6 +26,8 @@ public enum AirVRHeadTrackerKey {
 public enum AirVRLeftHandTrackerKey {
     Transform = 0,
     RaycastHitResult,
+    Vibrate,
+    RenderOnClient,
 
     // ADD ADDITIONAL KEYS HERE
 
@@ -35,6 +37,8 @@ public enum AirVRLeftHandTrackerKey {
 public enum AirVRRightHandTrackerKey {
     Transform = 0,
     RaycastHitResult,
+    Vibrate,
+    RenderOnClient,
 
     // ADD ADDITIONAL KEYS HERE
 
@@ -85,4 +89,18 @@ public enum AirVRControllerKey {
     ExtButtonRThumbstickRight,
 
     Max
+}
+
+public enum AirVRScreenTouchKey {
+    // reserve 0 ~ 9 for touches
+
+    TouchCount = 10,
+
+}
+
+public enum AirVRHapticVibration {
+    None = 0,
+
+    OneTime_Short,
+    OneTime_Long
 }

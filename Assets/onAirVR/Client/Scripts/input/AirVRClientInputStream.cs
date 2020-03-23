@@ -41,10 +41,13 @@ public class AirVRClientInputStream : AirVRInputStream {
     private static extern void ocs_PendInputFloat(byte deviceID, byte controlID, float value, byte policy);
 
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern bool ocs_GetTrackedDeviceFeedback(byte deviceID, byte controlID, 
-                                                                ref float worldRayOriginX, ref float worldRayOriginY, ref float worldRayOriginZ,
-                                                                ref float worldHitPositionX, ref float worldHitPositionY, ref float worldHitPositionZ,
-                                                                ref float worldHitNormalX, ref float worldHitNormalY, ref float worldHitNormalZ);
+    private static extern bool ocs_GetInputRaycastHit(byte deviceID, byte controlID, 
+                                                      ref float worldRayOriginX, ref float worldRayOriginY, ref float worldRayOriginZ,
+                                                      ref float worldHitPositionX, ref float worldHitPositionY, ref float worldHitPositionZ,
+                                                      ref float worldHitNormalX, ref float worldHitNormalY, ref float worldHitNormalZ);
+
+    [DllImport(AirVRClient.LibPluginName)]
+    private static extern bool ocs_GetInputByte(byte deviceID, byte controlID, ref byte value);
 
     [DllImport(AirVRClient.LibPluginName)]
     private static extern void ocs_SendPendingInputs(long timestamp);
@@ -134,13 +137,12 @@ public class AirVRClientInputStream : AirVRInputStream {
         ocs_PendInputFloat(deviceID, controlID, value, policy);
     }
 
-    protected override void PendTrackedDeviceFeedbackImpl(byte deviceID, byte controlID, Vector3 worldRayOrigin, Vector3 worldHitPosition, Vector3 worldHitNormal, byte policy) {
-        Assert.IsTrue(false);
+    protected override void PendInputByteImpl(byte deviceID, byte controlID, byte value, byte policy) {
+        // TODO
     }
 
-    protected override bool GetInputTouchImpl(byte deviceID, byte controlID, ref Vector2 position, ref float touch) {
+    protected override void PendInputRaycastHitImpl(byte deviceID, byte controlID, Vector3 worldRayOrigin, Vector3 worldHitPosition, Vector3 worldHitNormal, byte policy) {
         Assert.IsTrue(false);
-        return false;
     }
 
     protected override bool GetInputTransformImpl(byte deviceID, byte controlID, ref double timeStamp, ref Vector3 position, ref Quaternion orientation) {
@@ -168,11 +170,15 @@ public class AirVRClientInputStream : AirVRInputStream {
         return false;
     }
 
-    protected override bool GetTrackedDeviceFeedbackImpl(byte deviceID, byte controlID, ref Vector3 worldRayOrigin, ref Vector3 worldHitPosition, ref Vector3 worldHitNormal) {
-        return ocs_GetTrackedDeviceFeedback(deviceID, controlID, 
-                                                ref worldRayOrigin.x, ref worldRayOrigin.y, ref worldRayOrigin.z,
-                                                ref worldHitPosition.x, ref worldHitPosition.y, ref worldHitPosition.z,
-                                                ref worldHitNormal.x, ref worldHitNormal.y, ref worldHitNormal.z);
+    protected override bool GetInputByteImpl(byte deviceID, byte controlID, ref byte value) {
+        return ocs_GetInputByte(deviceID, controlID, ref value);
+    }
+
+    protected override bool GetInputRaycastHitImpl(byte deviceID, byte controlID, ref Vector3 worldRayOrigin, ref Vector3 worldHitPosition, ref Vector3 worldHitNormal) {
+        return ocs_GetInputRaycastHit(deviceID, controlID,
+                                      ref worldRayOrigin.x, ref worldRayOrigin.y, ref worldRayOrigin.z,
+                                      ref worldHitPosition.x, ref worldHitPosition.y, ref worldHitPosition.z,
+                                      ref worldHitNormal.x, ref worldHitNormal.y, ref worldHitNormal.z);
     }
 
     protected override void SendPendingInputEventsImpl(long timestamp) {
