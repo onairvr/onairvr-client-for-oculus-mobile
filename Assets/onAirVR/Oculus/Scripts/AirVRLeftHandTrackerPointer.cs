@@ -8,7 +8,7 @@ public class AirVRLeftHandTrackerPointer : AirVRPointer {
     protected override OVRInput.Controller ovrController => AirVROVRInputHelper.ParseController(OVRInput.Controller.LTouch);
     protected override byte renderOnClientKey => (byte)AirVRLeftHandTrackerKey.RenderOnClient;
     protected override byte raycastHitResultKey => (byte)AirVRLeftHandTrackerKey.RaycastHitResult;
-    protected override byte vibrateKey => (byte)AirVRLeftHandTrackerKey.RaycastHitResult;
+    protected override byte vibrateKey => (byte)AirVRLeftHandTrackerKey.Vibrate;
 
     protected override Vector3 worldOriginPosition {
         get {

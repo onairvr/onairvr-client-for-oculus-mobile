@@ -114,7 +114,9 @@ public abstract class AirVRPointerBase : MonoBehaviour {
             _cookieRenderer.enabled = false;
             shouldRenderVisuals = false;
         }
-        else if (message.IsInputStreamEvent() && message.Name.Equals(AirVRClientMessage.NameRemoteInputDeviceRegistered)) {
+        else if (message.IsInputStreamEvent() && 
+                 message.Name.Equals(AirVRClientMessage.NameRemoteInputDeviceRegistered) &&
+                 message.DeviceName == inputDeviceName) {
             if (message.PointerCookieTexture_Decoded != null) {
                 Texture2D cookieTexture = new Texture2D(2, 2);
                 cookieTexture.LoadImage(message.PointerCookieTexture_Decoded);
