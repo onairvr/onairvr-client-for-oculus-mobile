@@ -7,16 +7,21 @@
 
  ***********************************************************/
 
+using System;
+using System.IO;
 using UnityEngine;
 using UnityEngine.XR;
 
-public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClient.EventHandler {    
+public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClient.EventHandler {
+    private const string DevConfigFile = "config.json";
+
     [SerializeField][Range(0.5f, 2.0f)] private float _renderScale = 1f;
 
     private AirVRCamera _camera;
     private GameObject _room;
     private Light _envLight;
     private AirVRRealWorldSpaceSetup _realWorldSpaceSetup;
+    private DevConfig _devConfig;
 
     private bool _lastUserPresent = false;
 
@@ -35,6 +40,15 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
         InputModule = FindObjectOfType<AirVRClientInputModule>();
 
         AirVRClient.Delegate = this;
+
+        var configPath = Path.Combine(Application.persistentDataPath, DevConfigFile);
+        if (Application.isEditor == false && File.Exists(configPath)) {
+            _devConfig = JsonUtility.FromJson<DevConfig>(File.ReadAllText(configPath));
+        }
+        else {
+            _devConfig = new DevConfig();
+            _devConfig.profiler = false;
+        }
     }
 
     private void Start() {
@@ -112,6 +126,16 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
 
         _camera.profile.userID = userID.ToString();
 
+        if (_devConfig.profiler) {
+            var pathFormat = Path.Combine(Application.persistentDataPath, DateTime.Now.ToString("yyyyMMddhhmmss") + ".%s");
+
+            _camera.profile.profilers = AirVRProfileBase.ProfilerMaskFrame;
+            _camera.profile.profilerLogPathFormat = pathFormat;
+        }
+        else {
+            _camera.profile.profilers = 0;
+        }
+
 #if UNITY_ANDROID && !UNITY_EDITOR
         AirVRClient.Connect(address, port);
 #endif
@@ -164,4 +188,9 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
         // pong received data back to the server
         AirVRClient.SendUserData(userData);
     }
+
+    [Serializable]
+    private struct DevConfig {
+        public bool profiler;
+    } 
 }

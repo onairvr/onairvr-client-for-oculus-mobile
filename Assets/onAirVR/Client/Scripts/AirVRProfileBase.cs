@@ -14,8 +14,8 @@ using UnityEngine.Assertions;
 
 [System.Serializable]
 public abstract class AirVRProfileBase {
-    private const int ProfilerMaskFrame = 0x01;
-    private const int ProfilerMaskReport = 0x02;
+    public const int ProfilerMaskFrame = 0x01;
+    public const int ProfilerMaskReport = 0x02;
 
     public enum RenderType {
         DirectOnTwoEyeTextures,
@@ -26,7 +26,7 @@ public abstract class AirVRProfileBase {
     [SerializeField] private string UserID;
     [SerializeField] private int VideoBitrate;
     [SerializeField] private int Profilers;
-    [SerializeField] private string ProfilerLogPostfix;
+    [SerializeField] private string ProfilerLogPathFormat;
     [SerializeField] private string[] SupportedVideoCodecs;
     [SerializeField] private string[] SupportedAudioCodecs;
     [SerializeField] private int VideoWidth;
@@ -186,48 +186,21 @@ public abstract class AirVRProfileBase {
         }
     }
 
-    public string profiler {
+    public int profilers {
         get {
-            var profileFrame = (Profilers & ProfilerMaskFrame) != 0;
-            var profileReport = (Profilers & ProfilerMaskReport) != 0;
-
-            if (profileFrame && profileReport) {
-                return "full";
-            }
-            else if (profileFrame) {
-                return "frame";
-            }
-            else if (profileReport) {
-                return "report";
-            }
-            else {
-                return "";
-            }
+            return Profilers;
         }
         set {
-            switch (value) {
-                case "full":
-                    Profilers = ProfilerMaskFrame | ProfilerMaskReport;
-                    break;
-                case "frame":
-                    Profilers = ProfilerMaskFrame;
-                    break;
-                case "report":
-                    Profilers = ProfilerMaskReport;
-                    break;
-                default:
-                    Profilers = 0;
-                    break;
-            }
+            Profilers = value;
         }
     }
 
-    public string profilerLogPostfix {
+    public string profilerLogPathFormat {
         get {
-            return ProfilerLogPostfix;
+            return ProfilerLogPathFormat;
         }
         set {
-            ProfilerLogPostfix = value;
+            ProfilerLogPathFormat = value;
         }
     }
 
