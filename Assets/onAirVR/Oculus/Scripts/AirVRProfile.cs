@@ -17,12 +17,7 @@ public class AirVRProfile : AirVRProfileBase {
 
     public override (int width, int height) videoResolution {
         get {
-            if (AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest) {
-                return OVRManager.boundary.GetConfigured() ? (3200, 1600) : (2400, 1200);
-            }
-            else {
-                return (2560, 1280);
-            }
+            return AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest ? (3200, 1600) : (2560, 1280);
         }
     }
 
