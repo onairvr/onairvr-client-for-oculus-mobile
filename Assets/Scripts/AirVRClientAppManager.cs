@@ -125,9 +125,10 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
         Notification.DisplayConnecting();
 
         _camera.profile.userID = userID.ToString();
+        _camera.profile.videoBitrate = _devConfig.videoBitrate;
 
         if (_devConfig.profiler) {
-            var pathFormat = Path.Combine(Application.persistentDataPath, DateTime.Now.ToString("yyyyMMddhhmmss") + ".%s");
+            var pathFormat = Path.Combine(Application.persistentDataPath, DateTime.Now.ToString("yyyyMMddHHmmss") + ".%s");
 
             _camera.profile.profilers = AirVRProfileBase.ProfilerMaskFrame;
             _camera.profile.profilerLogPathFormat = pathFormat;
@@ -191,6 +192,7 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
 
     [Serializable]
     private struct DevConfig {
+        public int videoBitrate;
         public bool profiler;
     } 
 }
