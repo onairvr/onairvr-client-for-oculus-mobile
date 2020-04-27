@@ -40,15 +40,6 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
         InputModule = FindObjectOfType<AirVRClientInputModule>();
 
         AirVRClient.Delegate = this;
-
-        var configPath = Path.Combine(Application.persistentDataPath, DevConfigFile);
-        if (Application.isEditor == false && File.Exists(configPath)) {
-            _devConfig = JsonUtility.FromJson<DevConfig>(File.ReadAllText(configPath));
-        }
-        else {
-            _devConfig = new DevConfig();
-            _devConfig.profiler = false;
-        }
     }
 
     private void Start() {
@@ -124,8 +115,12 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
         IsConnecting = true;
         Notification.DisplayConnecting();
 
+        readDevConfig();
+
         _camera.profile.userID = userID.ToString();
-        _camera.profile.videoBitrate = _devConfig.videoBitrate;
+        _camera.profile.videoMinBitrate = _devConfig.videoBitrate.min;
+        _camera.profile.videoStartBitrate = _devConfig.videoBitrate.start;
+        _camera.profile.videoMaxBitrate = _devConfig.videoBitrate.max;
 
         if (_devConfig.profiler) {
             var pathFormat = Path.Combine(Application.persistentDataPath, DateTime.Now.ToString("yyyyMMddHHmmss") + ".%s");
@@ -163,6 +158,17 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
         IsConnecting = false;
     }
 
+    private void readDevConfig() {
+        var configPath = Path.Combine(Application.persistentDataPath, DevConfigFile);
+        if (Application.isEditor == false && File.Exists(configPath)) {
+            _devConfig = JsonUtility.FromJson<DevConfig>(File.ReadAllText(configPath));
+        }
+        else {
+            _devConfig = new DevConfig();
+            _devConfig.profiler = false;
+        }
+    }
+
     // implements AirVRClient.EventHandler
     public void AirVRClientFailed(string reason) { }
 
@@ -192,7 +198,14 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
 
     [Serializable]
     private struct DevConfig {
-        public int videoBitrate;
+        [Serializable]
+        public struct VideoBitrate {
+            public int min;
+            public int start;
+            public int max;
+        }
+
+        public VideoBitrate videoBitrate;
         public bool profiler;
     } 
 }

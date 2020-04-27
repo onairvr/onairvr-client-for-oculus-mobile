@@ -24,7 +24,6 @@ public abstract class AirVRProfileBase {
 
 #pragma warning disable CS0414
     [SerializeField] private string UserID;
-    [SerializeField] private int VideoBitrate;
     [SerializeField] private int Profilers;
     [SerializeField] private string ProfilerLogPathFormat;
     [SerializeField] private string[] SupportedVideoCodecs;
@@ -32,6 +31,9 @@ public abstract class AirVRProfileBase {
     [SerializeField] private int VideoWidth;
     [SerializeField] private int VideoHeight;
     [SerializeField] private float VideoFrameRate;
+    [SerializeField] private int VideoMinBitrate;
+    [SerializeField] private int VideoStartBitrate;
+    [SerializeField] private int VideoMaxBitrate;
     [SerializeField] private float IPD;
     [SerializeField] private bool Stereoscopy;
     [SerializeField] private float[] LeftEyeCameraNearPlane;
@@ -177,12 +179,30 @@ public abstract class AirVRProfileBase {
         }
     }
 
-    public int videoBitrate {
+    public int videoMinBitrate {
         get {
-            return VideoBitrate;
+            return VideoMinBitrate;
         }
         set {
-            VideoBitrate = value;
+            VideoMinBitrate = value;
+        }
+    }
+
+    public int videoStartBitrate {
+        get {
+            return VideoStartBitrate;
+        }
+        set {
+            VideoStartBitrate = value;
+        }
+    }
+
+    public int videoMaxBitrate {
+        get {
+            return VideoMaxBitrate;
+        }
+        set {
+            VideoMaxBitrate = value;
         }
     }
 
