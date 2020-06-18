@@ -50,31 +50,6 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
         }
     }
 
-    private void Update() {
-        if (Input.GetKeyDown(KeyCode.Escape)) {
-            if (IsConnecting) {
-                OnDisconnected();
-            }
-        }
-
-        // TODO remove real world space setup
-        if (OVRInput.GetDown(OVRInput.Button.SecondaryThumbstick)) {
-            if (_realWorldSpaceSetup == null) {
-                _realWorldSpaceSetup = new GameObject("RealWorldSpaceSetup").AddComponent<AirVRRealWorldSpaceSetup>();
-                _realWorldSpaceSetup.transform.position = Vector3.zero;
-                _realWorldSpaceSetup.transform.rotation = Quaternion.identity;
-
-                _room.SetActive(false);
-            }
-            else {
-                Destroy(_realWorldSpaceSetup.gameObject);
-                _realWorldSpaceSetup = null;
-
-                _room.SetActive(true);
-            }
-        }
-    }
-
     public void Connect(string addressText, string portText, string userIDText) {   
         string message;
 
@@ -190,10 +165,10 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
     }
 
     public void AirVRClientUserDataReceived(byte[] userData) {
-        Debug.Log("User data received: " + userData.Length);
-        
-        // pong received data back to the server
-        AirVRClient.SendUserData(userData);
+        // pong with received data to the server
+        var data = string.Format("pong from {0} by {1}", System.Environment.MachineName, System.Text.Encoding.UTF8.GetString(userData));
+
+        AirVRClient.SendUserData(System.Text.Encoding.UTF8.GetBytes(data));
     }
 
     [Serializable]

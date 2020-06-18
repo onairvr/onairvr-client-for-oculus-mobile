@@ -14,12 +14,17 @@ ANY KIND, either express or implied. See the License for the specific language g
 permissions and limitations under the License.
 ************************************************************************************/
 
+#if USING_XR_MANAGEMENT && USING_XR_SDK_OCULUS
+#define USING_XR_SDK
+#endif
+
 using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 #if USING_XR_SDK
+using UnityEngine.XR;
 using UnityEngine.Experimental.XR;
 #endif
 
@@ -157,6 +162,11 @@ public static class OVRExtensions
 		return new Vector3() { x = v.x, y = v.y, z = v.z };
 	}
 
+	public static Vector3 FromFlippedXVector3f(this OVRPlugin.Vector3f v)
+	{
+		return new Vector3() { x = -v.x, y = v.y, z = v.z };
+	}
+
 	public static Vector3 FromFlippedZVector3f(this OVRPlugin.Vector3f v)
 	{
 		return new Vector3() { x = v.x, y = v.y, z = -v.z };
@@ -165,6 +175,11 @@ public static class OVRExtensions
 	public static OVRPlugin.Vector3f ToVector3f(this Vector3 v)
 	{
 		return new OVRPlugin.Vector3f() { x = v.x, y = v.y, z = v.z };
+	}
+
+	public static OVRPlugin.Vector3f ToFlippedXVector3f(this Vector3 v)
+	{
+		return new OVRPlugin.Vector3f() { x = -v.x, y = v.y, z = v.z };
 	}
 
 	public static OVRPlugin.Vector3f ToFlippedZVector3f(this Vector3 v)
@@ -177,6 +192,11 @@ public static class OVRExtensions
 		return new Quaternion() { x = q.x, y = q.y, z = q.z, w = q.w };
 	}
 
+	public static Quaternion FromFlippedXQuatf(this OVRPlugin.Quatf q)
+	{
+		return new Quaternion() { x = q.x, y = -q.y, z = -q.z, w = q.w };
+	}
+
 	public static Quaternion FromFlippedZQuatf(this OVRPlugin.Quatf q)
 	{
 		return new Quaternion() { x = -q.x, y = -q.y, z = q.z, w = q.w };
@@ -185,6 +205,11 @@ public static class OVRExtensions
 	public static OVRPlugin.Quatf ToQuatf(this Quaternion q)
 	{
 		return new OVRPlugin.Quatf() { x = q.x, y = q.y, z = q.z, w = q.w };
+	}
+
+	public static OVRPlugin.Quatf ToFlippedXQuatf(this Quaternion q)
+	{
+		return new OVRPlugin.Quatf() { x = q.x, y = -q.y, z = -q.z, w = q.w };
 	}
 
 	public static OVRPlugin.Quatf ToFlippedZQuatf(this Quaternion q)
@@ -214,6 +239,19 @@ public static class OVRExtensions
 		return pose;
 	}
 
+	public static Transform FindChildRecursive(this Transform parent, string name)
+	{
+		foreach (Transform child in parent)
+		{
+			if (child.name.Contains(name))
+				return child;
+
+			var result = child.FindChildRecursive(name);
+			if (result != null)
+				return result;
+		}
+		return null;
+	}
 }
 
 //4 types of node state properties that can be queried with UnityEngine.XR
@@ -523,13 +561,27 @@ public struct OVRPose
 		return ret;
 	}
 
-	public OVRPlugin.Posef ToPosef()
+	// Warning: this function is not a strict reverse of OVRPlugin.Posef.ToOVRPose(), even after flipZ()
+	public OVRPlugin.Posef ToPosef_Legacy()
 	{
 		return new OVRPlugin.Posef()
 		{
 			Position = position.ToVector3f(),
 			Orientation = orientation.ToQuatf()
 		};
+	}
+
+	public OVRPlugin.Posef ToPosef()
+	{
+		OVRPlugin.Posef result = new OVRPlugin.Posef();
+		result.Position.x = position.x;
+		result.Position.y = position.y;
+		result.Position.z = -position.z;
+		result.Orientation.x = -orientation.x;
+		result.Orientation.y = -orientation.y;
+		result.Orientation.z = orientation.z;
+		result.Orientation.w = orientation.w;
+		return result;
 	}
 }
 
