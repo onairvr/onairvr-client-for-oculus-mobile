@@ -93,9 +93,12 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
         readDevConfig();
 
         _camera.profile.userID = userID.ToString();
-        _camera.profile.videoMinBitrate = _devConfig.videoBitrate.min;
-        _camera.profile.videoStartBitrate = _devConfig.videoBitrate.start;
-        _camera.profile.videoMaxBitrate = _devConfig.videoBitrate.max;
+
+        if (_devConfig.videoBitrate.min > 0 && _devConfig.videoBitrate.start > 0 && _devConfig.videoBitrate.max > 0) {
+            _camera.profile.videoMinBitrate = _devConfig.videoBitrate.min;
+            _camera.profile.videoStartBitrate = _devConfig.videoBitrate.start;
+            _camera.profile.videoMaxBitrate = _devConfig.videoBitrate.max;
+        }
 
         if (_devConfig.profiler) {
             var pathFormat = Path.Combine(Application.persistentDataPath, DateTime.Now.ToString("yyyyMMddHHmmss") + ".%s");
@@ -140,7 +143,6 @@ public class AirVRClientAppManager : Singleton<AirVRClientAppManager>, AirVRClie
         }
         else {
             _devConfig = new DevConfig();
-            _devConfig.profiler = false;
         }
     }
 

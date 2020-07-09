@@ -8,11 +8,8 @@
  ***********************************************************/
 
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.Assertions;
 using System;
-using System.IO;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 public class AirVRClient : MonoBehaviour, AirVRClientStateMachine.Context {

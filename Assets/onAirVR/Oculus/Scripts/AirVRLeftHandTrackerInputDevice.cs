@@ -10,33 +10,40 @@
 using UnityEngine;
 
 public class AirVRLeftHandTrackerInputDevice : AirVRTrackerInputDevice {
-    // implements AirVRInputDevice
-    protected override string deviceName => AirVRInputDeviceName.LeftHandTracker;
-
-    protected override bool connected => AirVROVRInputHelper.IsConnected(OVRInput.Controller.LTouch);
-
-    protected override void PendInputs(AirVRInputStream inputStream) {
-        var (position, rotation) = getPose();
-
-        inputStream.PendTransform(this, (byte)AirVRLeftHandTrackerKey.Transform, position, rotation);
+    private AirVRDeviceStatus currentStatus {
+        get {
+            return AirVROVRInputHelper.IsConnected(OVRInput.Controller.LTouch) ? AirVRDeviceStatus.Ready : AirVRDeviceStatus.Unavailable;
+        }
     }
 
-    private (Vector3 position, Quaternion rotation) getPose() {
-        const OVRInput.Controller controller = OVRInput.Controller.LTouch;
+    private Pose currentPose {
+        get {
+            const OVRInput.Controller controller = OVRInput.Controller.LTouch;
 
-        var position = OVRInput.GetLocalControllerPosition(controller);
-        var rotation = OVRInput.GetLocalControllerRotation(controller);
+            var position = OVRInput.GetLocalControllerPosition(controller);
+            var rotation = OVRInput.GetLocalControllerRotation(controller);
 
-        if (realWorldSpace != null) {
-            var trackingSpaceToRealWorldMatrix = (realWorldSpace as AirVRRealWorldSpace).trackingSpaceToRealWorldMatrix;
+            if (realWorldSpace != null) {
+                var trackingSpaceToRealWorldMatrix = (realWorldSpace as AirVRRealWorldSpace).trackingSpaceToRealWorldMatrix;
 
-            return (
-                trackingSpaceToRealWorldMatrix.MultiplyPoint(position),
-                trackingSpaceToRealWorldMatrix.rotation * rotation
-            );
+                return new Pose(
+                    trackingSpaceToRealWorldMatrix.MultiplyPoint(position),
+                    trackingSpaceToRealWorldMatrix.rotation * rotation
+                );
+            }
+            else {
+                return new Pose(position, rotation);
+            }
         }
-        else {
-            return (position, rotation);
-        }
+    }
+
+    // implements AirVRInputDevice
+    public override byte id => (byte)AirVRInputDeviceID.LeftHandTracker;
+
+    public override void PendInputsPerFrame(AirVRInputStream inputStream) {
+        var pose = currentPose;
+
+        inputStream.PendState(this, (byte)AirVRHandTrackerControl.Status, (byte)currentStatus);
+        inputStream.PendPose(this, (byte)AirVRHandTrackerControl.Pose, pose.position, pose.rotation);
     }
 }

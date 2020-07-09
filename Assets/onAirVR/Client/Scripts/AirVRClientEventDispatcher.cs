@@ -7,9 +7,7 @@
 
  ***********************************************************/
 
-using UnityEngine;
 using System;
-using System.IO;
 using System.Runtime.InteropServices;
 
 public class AirVRClientEventDispatcher : AirVREventDispatcher {

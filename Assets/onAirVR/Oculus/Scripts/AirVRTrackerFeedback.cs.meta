@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: 7a07f7fb5edd24148b878e989f8d6858
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _cookieTexture: {fileID: 2800000, guid: 3f1842b0bdbbc2b4d841e87cea6b58c0, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

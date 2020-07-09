@@ -7112,6 +7112,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _enableAudio: 1
   _audioMixerGroup: {fileID: 0}
+  _videoBitrate: 1
   _preferRealWorldSpace: 0
 --- !u!1 &1869701905
 GameObject:

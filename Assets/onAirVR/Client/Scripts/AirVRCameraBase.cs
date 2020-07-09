@@ -24,7 +24,9 @@ public abstract class AirVRCameraBase : MonoBehaviour {
 
     [SerializeField] private bool _enableAudio = true;
     [SerializeField] private AudioMixerGroup _audioMixerGroup;
+    [SerializeField] private AirVRProfileBase.VideoBitrate _videoBitrate = AirVRProfileBase.VideoBitrate.Normal;
 
+    protected AirVRProfileBase.VideoBitrate videoBitrate => _videoBitrate;
     protected HeadTrackerInputDevice headTracker { get; private set; }
     protected GameObject defaultLeftControllerModel { get; private set; }
     protected GameObject defaultRightControllerModel { get; private set; }
@@ -70,7 +72,8 @@ public abstract class AirVRCameraBase : MonoBehaviour {
         AirVRInputManager.LoadOnce();
 
 		AirVRClient.MessageReceived += onAirVRMesageReceived;
-        AirVRInputManager.RegisterInputDevice(headTracker);
+
+        AirVRInputManager.RegisterInputSender(headTracker);
 
         StartCoroutine(CallEndOfFrame());
 
@@ -84,9 +87,9 @@ public abstract class AirVRCameraBase : MonoBehaviour {
 
 		if (AirVRClient.playing) {
             if (_renderingRight == false) {
-                var (_, rotation) = headTracker.GetHeadPose(_thisTransform);
+                var pose = headTracker.currentPose;
 
-                ocs_SetCameraOrientation(rotation.x, rotation.y, rotation.z, rotation.w, ref _viewNumber);
+                ocs_SetCameraOrientation(new AirVRVector4D(pose.rotation), ref _viewNumber);
                 GL.IssuePluginEvent(ocs_PreRenderVideoFrame_RenderThread_Func(), _viewNumber);
             }
 
@@ -145,40 +148,6 @@ public abstract class AirVRCameraBase : MonoBehaviour {
         }
 	}
 
-    protected class HeadTrackerInputDevice : AirVRTrackerInputDevice {
-        public HeadTrackerInputDevice(Transform camera) {
-            _camera = camera;
-        }
-
-        protected override string deviceName => AirVRInputDeviceName.HeadTracker;
-        protected override bool connected => true;
-
-        protected override void PendInputs(AirVRInputStream inputStream) {
-            var (position, rotation) = GetHeadPose(_camera);
-
-            inputStream.PendTransform(this, (byte)AirVRHeadTrackerKey.Transform, position, rotation);
-        }
-
-        public (Vector3 position, Quaternion rotation) GetHeadPose(Transform head) {
-            if (realWorldSpace != null) {
-                var worldToRealWorldMatrix = realWorldSpace.realWorldToWorldMatrix.inverse;
-
-                return (
-                    worldToRealWorldMatrix.MultiplyPoint(_camera.position),
-                    worldToRealWorldMatrix.rotation * _camera.rotation
-                );
-            }
-            else {
-                return (
-                    _camera.localPosition,
-                    _camera.localRotation
-                );
-            }
-        }
-
-        private Transform _camera;
-    }
-
     private int renderEvent(FrameType frameType, bool clearColor) {
         return (int)(((int)frameType << 24) + (clearColor ? RenderEventMaskClearColor : 0));
     }
@@ -202,7 +171,7 @@ public abstract class AirVRCameraBase : MonoBehaviour {
     private static extern void ocs_EnableNetworkTimeWarp(bool enable);
 
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern void ocs_SetCameraOrientation(float x, float y, float z, float w, ref int viewNumber);
+    private static extern void ocs_SetCameraOrientation(AirVRVector4D rotation, ref int viewNumber);
 
     [DllImport(AirVRClient.LibPluginName)]
     private static extern System.IntPtr ocs_PreRenderVideoFrame_RenderThread_Func();
@@ -254,5 +223,38 @@ public abstract class AirVRCameraBase : MonoBehaviour {
         }
 
         public override void Clear() { }
+    }
+
+    protected class HeadTrackerInputDevice : AirVRTrackerInputDevice {
+        private Transform _head;
+
+        public Pose currentPose {
+            get {
+                if (realWorldSpace != null) {
+                    var worldToRealWorldMatrix = realWorldSpace.realWorldToWorldMatrix.inverse;
+
+                    return new Pose(
+                        worldToRealWorldMatrix.MultiplyPoint(_head.position),
+                        worldToRealWorldMatrix.rotation * _head.rotation
+                    );
+                }
+                else {
+                    return new Pose(_head.localPosition, _head.localRotation);
+                }
+            }
+        }
+
+        public HeadTrackerInputDevice(Transform head) {
+            _head = head;
+        }
+
+        // implements AirVRTrackerInputDevice
+        public override byte id => (byte)AirVRInputDeviceID.HeadTracker;
+
+        public override void PendInputsPerFrame(AirVRInputStream inputStream) {
+            var pose = currentPose;
+
+            inputStream.PendPose(this, (byte)AirVRHeadTrackerControl.Pose, pose.position, pose.rotation);
+        }
     }
 }

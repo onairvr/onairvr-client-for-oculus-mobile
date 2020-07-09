@@ -7,12 +7,11 @@
 
  ***********************************************************/
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Assertions.Comparers;
 
 public class AirVRProfile : AirVRProfileBase {
+    public AirVRProfile(VideoBitrate bitrate) : base(bitrate) {}
+
 	private bool _userPresent;
 
     public override (int width, int height) videoResolution {

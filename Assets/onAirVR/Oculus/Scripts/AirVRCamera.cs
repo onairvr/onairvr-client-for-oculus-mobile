@@ -8,8 +8,6 @@
  ***********************************************************/
 
 using UnityEngine;
-using UnityEngine.Assertions;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 [RequireComponent(typeof(Camera))]
@@ -37,7 +35,7 @@ public class AirVRCamera : AirVRCameraBase {
         }
         
         base.Awake();
-        _profile = new AirVRProfile();
+        _profile = new AirVRProfile(videoBitrate);
         _trackingSpace = transform.parent;
     }
 
@@ -47,12 +45,12 @@ public class AirVRCamera : AirVRCameraBase {
         _leftHandTracker = new AirVRLeftHandTrackerInputDevice();
         _rightHandTracker = new AirVRRightHandTrackerInputDevice();
 
-        AirVRInputManager.RegisterInputDevice(_leftHandTracker);
-        AirVRInputManager.RegisterInputDevice(_rightHandTracker);
-        AirVRInputManager.RegisterInputDevice(new AirVRControllerInputDevice());
+        AirVRInputManager.RegisterInputSender(_leftHandTracker);
+        AirVRInputManager.RegisterInputSender(_rightHandTracker);
+        AirVRInputManager.RegisterInputSender(new AirVRControllerInputDevice());
 
-        gameObject.AddComponent<AirVRLeftHandTrackerPointer>().Configure(defaultLeftControllerModel, true);
-        gameObject.AddComponent<AirVRRightHandTrackerPointer>().Configure(defaultRightControllerModel, true);
+        gameObject.AddComponent<AirVRLeftHandTracker>().Configure(_profile, defaultLeftControllerModel, true);
+        gameObject.AddComponent<AirVRRightHandTracker>().Configure(_profile, defaultRightControllerModel, true);
 
         if (_preferRealWorldSpace && 
             AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest) {

@@ -7,8 +7,6 @@
 
  ***********************************************************/
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -20,6 +18,35 @@ public abstract class AirVRProfileBase {
     public enum RenderType {
         DirectOnTwoEyeTextures,
         UseSeperateVideoRenderTarget
+    }
+
+    public enum VideoBitrate {
+        Low,
+        Normal,
+        High,
+        Best
+    }
+
+    public AirVRProfileBase(VideoBitrate bitrate) {
+        switch (bitrate) {
+            case VideoBitrate.Low:
+                videoMinBitrate = 6000000;
+                videoStartBitrate = 8000000;
+                videoMaxBitrate = 16000000;
+                break;
+            case VideoBitrate.Normal:
+                videoMinBitrate = 8000000;
+                videoStartBitrate = 16000000;
+                videoMaxBitrate = 28000000;
+                break;
+            case VideoBitrate.High:
+                videoMinBitrate = 8000000;
+                videoStartBitrate = 24000000;
+                videoMaxBitrate = 40000000;
+                break;
+            default:
+                break;
+        }
     }
 
 #pragma warning disable CS0414

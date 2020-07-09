@@ -169,7 +169,7 @@ PlayerSettings:
     Standalone: com.oculus.UnitySample
   buildNumber:
     Standalone: 4
-  AndroidBundleVersionCode: 202006161
+  AndroidBundleVersionCode: 202007091
   AndroidMinSdkVersion: 25
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 0

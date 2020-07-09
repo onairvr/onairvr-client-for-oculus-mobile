@@ -7,14 +7,17 @@
 
  ***********************************************************/
 
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Assertions;
 
 public class AirVRInputManager : MonoBehaviour {
     private static AirVRInputManager _instance;
+
+    public static AirVRClientInputStream inputStream {
+        get {
+            return _instance != null ? _instance._inputStream : null;
+        }
+    }
 
     public static void LoadOnce() {
         if (_instance == null) {
@@ -22,78 +25,45 @@ public class AirVRInputManager : MonoBehaviour {
             go.AddComponent<AirVRInputManager>();
         }
     }
-    
-    public static void RegisterInputDevice(AirVRInputDevice device) {
+
+    public static void RegisterInputSender(AirVRInputSender sender) {
         Assert.IsNotNull(_instance);
-        if (_instance._inputDevices.Contains(device) == false) {
-            _instance._inputDevices.Add(device);
-        }
+
+        _instance._inputStream.RegisterInputSender(sender);
     }
 
-    public static void UnregisterInputDevice(AirVRInputDevice device) {
-        if (_instance != null) {
-            _instance._inputDevices.Remove(device);
-        }
-    }
-    
-    public static void RegisterTrackedDeviceFeedback(AirVRPointerBase pointer) {
+    public static void UnregisterInputSender(AirVRInputSender sender) {
         Assert.IsNotNull(_instance);
-        _instance._inputStream.RegisterInputReceiver(pointer.feedbackReceiver);
+
+        _instance._inputStream.UnregisterInputSender(sender);
     }
 
-    public static void UnregisterTrackedDeviceFeedback(AirVRPointerBase pointer) {
-        if (_instance != null) {
-            _instance._inputStream.UnregisterInputReceiver(pointer.feedbackReceiver);
-        }
-    }
-
-    public static bool CheckIfInputDeviceEnabled(AirVRInputDevice device) {
-        Assert.IsNotNull(_instance);
-        return _instance._inputStream.CheckIfInputSenderAvailable(device);
-    }
-    
-    public static void EnableInputDevice(AirVRInputDevice device) {
-        Assert.IsNotNull(_instance);
-        _instance._inputStream.EnableInputSender(device);
-    }
-
-    public static void DisableInputDevice(AirVRInputDevice device) {
-        if (_instance != null) {
-            _instance._inputStream.DisableInputSender(device);
-        }
-    }
-
-    private List<AirVRInputDevice> _inputDevices;
     private AirVRClientInputStream _inputStream;
 
-    void Awake() {
+    private void Awake() {
         Assert.IsNull(_instance);
         _instance = this;
         DontDestroyOnLoad(gameObject);
 
         _inputStream = new AirVRClientInputStream();
-        _inputDevices = new List<AirVRInputDevice>();
 
-		AirVRClient.MessageReceived += onAirVRMessageReceived;
+        AirVRClient.MessageReceived += onAirVRMessageReceived;
     }
 
-    void Update() {
-        foreach (var device in _inputDevices) {
-            device.Update();
-        }
-        _inputStream.UpdateReceivers();
+    private void Update() {
+        if (Application.isEditor) { return; }
+
+        _inputStream.UpdateInputFrame();
     }
 
-    void LateUpdate() {
+    private void LateUpdate() {
+        if (Application.isEditor) { return; }
+
         _inputStream.UpdateSenders();
     }
 
-    void OnDestroy() {
-		AirVRClient.MessageReceived -= onAirVRMessageReceived;
-    }
-
-	// handle AirVRMessages
-	private void onAirVRMessageReceived(AirVRClientMessage message) {
+    // handle AirVRMessages
+    private void onAirVRMessageReceived(AirVRClientMessage message) {
         if (message.IsSessionEvent()) {
             if (message.Name.Equals(AirVRClientMessage.NameSetupResponded)) {
                 _inputStream.Init();
@@ -108,13 +78,5 @@ public class AirVRInputManager : MonoBehaviour {
                 _inputStream.Cleanup();
             }
         }
-        else if (message.IsInputStreamEvent()) {
-            if (message.Name.Equals(AirVRClientMessage.NameRemoteInputDeviceRegistered)) {
-                _inputStream.HandleRemoteInputDeviceRegistered(message.DeviceName, (byte)message.DeviceID);
-            }
-            else if (message.Name.Equals(AirVRClientMessage.NameRemoteInputDeviceUnregistered)) {
-                _inputStream.HandleRemoteInputDeviceUnregistered((byte)message.DeviceID);
-            }
-        }
-	}
+    }
 }
