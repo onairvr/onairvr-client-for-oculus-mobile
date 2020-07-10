@@ -49,8 +49,9 @@ public class AirVRCamera : AirVRCameraBase {
         AirVRInputManager.RegisterInputSender(_rightHandTracker);
         AirVRInputManager.RegisterInputSender(new AirVRControllerInputDevice());
 
-        gameObject.AddComponent<AirVRLeftHandTracker>().Configure(_profile, defaultLeftControllerModel, true);
-        gameObject.AddComponent<AirVRRightHandTracker>().Configure(_profile, defaultRightControllerModel, true);
+        var desc = pointerDesc;
+        gameObject.AddComponent<AirVRLeftHandTracker>().Configure(_profile, leftControllerModel, desc);
+        gameObject.AddComponent<AirVRRightHandTracker>().Configure(_profile, rightControllerModel, desc);
 
         if (_preferRealWorldSpace && 
             AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest) {

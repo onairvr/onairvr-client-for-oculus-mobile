@@ -25,11 +25,38 @@ public abstract class AirVRCameraBase : MonoBehaviour {
     [SerializeField] private bool _enableAudio = true;
     [SerializeField] private AudioMixerGroup _audioMixerGroup;
     [SerializeField] private AirVRProfileBase.VideoBitrate _videoBitrate = AirVRProfileBase.VideoBitrate.Normal;
+    [SerializeField] private ControllerOverlay _controllerOverlay = ControllerOverlay.Default;
+    [SerializeField] private GameObject _leftControllerModel = null;
+    [SerializeField] private GameObject _rightControllerModel = null;
+    [SerializeField] private bool _enablePointer = true;
+    [SerializeField] private Color _colorLaser = Color.white;
+    [SerializeField] private Texture2D _pointerCookie = null;
+    [SerializeField] private float _pointerCookieDepthScaleMultiplier = 0.015f;
 
     protected AirVRProfileBase.VideoBitrate videoBitrate => _videoBitrate;
     protected HeadTrackerInputDevice headTracker { get; private set; }
-    protected GameObject defaultLeftControllerModel { get; private set; }
-    protected GameObject defaultRightControllerModel { get; private set; }
+
+    protected GameObject leftControllerModel {
+        get {
+            return _controllerOverlay == ControllerOverlay.Custom ? _leftControllerModel : Resources.Load<GameObject>("LeftControllerModel");
+        }
+    }
+    protected GameObject rightControllerModel {
+        get {
+            return _controllerOverlay == ControllerOverlay.Custom ? _rightControllerModel : Resources.Load<GameObject>("RightControllerModel");
+        }
+    }
+
+    protected AirVRTrackerFeedbackBase.PointerDesc pointerDesc {
+        get {
+            return new AirVRTrackerFeedbackBase.PointerDesc {
+                enabled = _controllerOverlay == ControllerOverlay.Custom ? _enablePointer : true,
+                colorLaser = _controllerOverlay == ControllerOverlay.Custom ? _colorLaser : Color.white,
+                cookie = _controllerOverlay == ControllerOverlay.Custom ? _pointerCookie : Resources.Load<Texture2D>("PointerCookie"),
+                cookieDepthScaleMultiplier = _controllerOverlay == ControllerOverlay.Custom ? _pointerCookieDepthScaleMultiplier : 0.015f
+            };
+        }
+    }
 
     protected abstract void RecenterPose();
 
@@ -63,9 +90,6 @@ public abstract class AirVRCameraBase : MonoBehaviour {
     }
 
     protected virtual void Start() {
-        defaultLeftControllerModel = Resources.Load<GameObject>("LeftControllerModel");
-        defaultRightControllerModel = Resources.Load<GameObject>("RightControllerModel");
-        
         _renderCommand = RenderCommand.Create(profile, _camera);
 
         AirVRClient.LoadOnce(profile, this);
@@ -188,6 +212,11 @@ public abstract class AirVRCameraBase : MonoBehaviour {
         StereoLeft = 0,
         StereoRight,
         Mono
+    }
+
+    private enum ControllerOverlay {
+        Default,
+        Custom
     }
 
     private abstract class RenderCommand {

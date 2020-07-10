@@ -25,7 +25,7 @@ public class AirVRClientSampleScene : MonoBehaviour, AirVRClient.EventHandler {
     }
 
 	private void Update() {
-        if (OVRInput.GetDown(OVRInput.Button.Back) || Input.GetKeyDown(KeyCode.Escape)) {
+        if (OVRInput.GetDown(OVRInput.Button.One)) {
             if (AirVRClient.connected == false) {
                 _camera.profile.userID = (_userID++).ToString();
 

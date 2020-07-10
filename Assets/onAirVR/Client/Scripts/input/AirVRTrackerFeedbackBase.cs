@@ -10,10 +10,16 @@
 using UnityEngine;
 
 public abstract class AirVRTrackerFeedbackBase : MonoBehaviour {
+    public struct PointerDesc {
+        public bool enabled;
+        public Color colorLaser;
+        public Texture2D cookie;
+        public float cookieDepthScaleMultiplier;
+    } 
+
     private const float DefaultRayLength = 0.15f;
     private const float MaxRayLength = 1.5f;
     private const float RatioOfRayLengthToHit = 0.3f;
-    private const float DefaultDepthScaleMultiplier = 0.015f;
     private static float[] RayPositions = { 0.0f, 0.1f, 1.0f };
     private static GradientAlphaKey[] RayAlphaKeys = {
         new GradientAlphaKey(0.0f, 0.0f),
@@ -23,7 +29,7 @@ public abstract class AirVRTrackerFeedbackBase : MonoBehaviour {
 
     private Transform _cookie;
     private MeshRenderer _cookieRenderer;
-    private float _depthScaleMultiplier = DefaultDepthScaleMultiplier;
+    private PointerDesc _pointerDesc = new PointerDesc();
     private LineRenderer _ray;
     private Transform _body;
     private bool _shouldRenderVisuals;
@@ -54,11 +60,13 @@ public abstract class AirVRTrackerFeedbackBase : MonoBehaviour {
 
     protected abstract void SetVibration(float frequency, float amplitude);
 
-    public void Configure(AirVRProfileBase profile, GameObject bodyModelPrefab, bool createRay) {
+    public void Configure(AirVRProfileBase profile, GameObject bodyModelPrefab, PointerDesc pointerDesc) {
+        _pointerDesc = pointerDesc;
+
         if (bodyModelPrefab != null) {
             _body = Instantiate(bodyModelPrefab, Vector3.zero, Quaternion.identity).transform;
         }
-        if (createRay) {
+        if (_pointerDesc.enabled) {
             Material mat = new Material(Shader.Find("onAirVR/Unlit vertex color"));
 
             _ray = _body.gameObject.AddComponent<LineRenderer>();
@@ -74,8 +82,8 @@ public abstract class AirVRTrackerFeedbackBase : MonoBehaviour {
             Gradient colorCurve = new Gradient();
             colorCurve.SetKeys(
                 new GradientColorKey[] {
-                    new GradientColorKey(Color.white, 0.0f),
-                    new GradientColorKey(Color.white, 1.0f)
+                    new GradientColorKey(pointerDesc.colorLaser, 0.0f),
+                    new GradientColorKey(pointerDesc.colorLaser, 1.0f)
                 },
                 RayAlphaKeys
             );
@@ -131,6 +139,8 @@ public abstract class AirVRTrackerFeedbackBase : MonoBehaviour {
     }
 
     private void createCookie(Shader cookieShader) {
+        if (_pointerDesc.enabled == false) { return; }
+
         GameObject goCookie = new GameObject("Cookie");
         goCookie.transform.localPosition = Vector3.zero;
         goCookie.transform.localRotation = Quaternion.identity;
@@ -158,7 +168,7 @@ public abstract class AirVRTrackerFeedbackBase : MonoBehaviour {
         _cookie = goCookie.transform;
         _cookieRenderer = goCookie.AddComponent<MeshRenderer>();
         _cookieRenderer.material = new Material(cookieShader);
-        _cookieRenderer.material.mainTexture = Resources.Load<Texture2D>("PointerCookie");
+        _cookieRenderer.material.mainTexture = _pointerDesc.cookie;
 
         shouldRenderVisuals = false;
     }
@@ -168,7 +178,7 @@ public abstract class AirVRTrackerFeedbackBase : MonoBehaviour {
     }
 
     private void updateVisuals() {
-        bool shouldShowPointer = shouldRenderVisuals && AirVRClient.playing;
+        bool shouldShowPointer = _pointerDesc.enabled && shouldRenderVisuals && AirVRClient.playing;
 
         if (shouldShowPointer) {
             _worldOriginPose.Update(worldOriginPosition, worldOriginOrientation);
@@ -195,7 +205,7 @@ public abstract class AirVRTrackerFeedbackBase : MonoBehaviour {
 
             _cookie.position = _worldOriginPose.position + _worldOriginPose.rotation * (distance * Vector3.forward);
             _cookie.rotation = rotation;
-            _cookie.localScale = Vector3.one * distance * _depthScaleMultiplier;
+            _cookie.localScale = Vector3.one * distance * _pointerDesc.cookieDepthScaleMultiplier;
         }
     }
 
