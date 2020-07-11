@@ -20,6 +20,12 @@ limitations under the License.
 ************************************************************************************/
 
 //#define BUILDSESSION
+
+#if USING_XR_MANAGEMENT && USING_XR_SDK_OCULUS
+#define USING_XR_SDK
+#endif
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -27,20 +33,19 @@ using System.Xml;
 using System.Diagnostics;
 using System.Threading;
 using UnityEditor;
-#if UNITY_ANDROID
-using UnityEditor.Android;
-#endif
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEditor.Build;
 #if UNITY_2018_1_OR_NEWER
 using UnityEditor.Build.Reporting;
 #endif
-using System;
+#if UNITY_ANDROID
+using UnityEditor.Android;
+#endif
 
 [InitializeOnLoad]
 public class OVRGradleGeneration
-#if UNITY_2018_1_OR_NEWER
+#if UNITY_2018_2_OR_NEWER
 	: IPreprocessBuildWithReport, IPostprocessBuildWithReport
 #if UNITY_ANDROID
 	, IPostGenerateGradleAndroidProject
@@ -53,9 +58,11 @@ public class OVRGradleGeneration
 	static private System.DateTime buildStartTime;
 	static private System.Guid buildGuid;
 
+#if UNITY_ANDROID
 	private const string prefName = "OVRAutoIncrementVersionCode_Enabled";
 	private const string menuItemAutoIncVersion = "Oculus/Tools/Auto Increment Version Code";
 	static bool autoIncrementVersion = false;
+#endif
 
 	static OVRGradleGeneration()
 	{
@@ -87,14 +94,14 @@ public class OVRGradleGeneration
 
 	public void OnPreprocessBuild(BuildReport report)
 	{
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !(USING_XR_SDK && UNITY_2019_3_OR_NEWER)
 		// Generate error when Vulkan is selected as the perferred graphics API, which is not currently supported in Unity XR
 		if (!PlayerSettings.GetUseDefaultGraphicsAPIs(BuildTarget.Android))
 		{
 			GraphicsDeviceType[] apis = PlayerSettings.GetGraphicsAPIs(BuildTarget.Android);
 			if (apis.Length >= 1 && apis[0] == GraphicsDeviceType.Vulkan)
 			{
-				throw new BuildFailedException("XR is currently not supported when using the Vulkan Graphics API. Please go to PlayerSettings and remove 'Vulkan' from the list of Graphics APIs.");
+				throw new BuildFailedException("The Vulkan Graphics API does not support XR in your configuration. To use Vulkan, you must use Unity 2019.3 or newer, and the XR Plugin Management.");
 			}
 		}
 #endif
@@ -110,7 +117,9 @@ public class OVRGradleGeneration
 
 		OVRPlugin.AddCustomMetadata("build_guid", buildGuid.ToString());
 		OVRPlugin.AddCustomMetadata("target_platform", report.summary.platform.ToString());
+#if !UNITY_2019_3_OR_NEWER
 		OVRPlugin.AddCustomMetadata("scripting_runtime_version", UnityEditor.PlayerSettings.scriptingRuntimeVersion.ToString());
+#endif
 		if (report.summary.platform == UnityEditor.BuildTarget.StandaloneWindows
 			|| report.summary.platform == UnityEditor.BuildTarget.StandaloneWindows64)
 		{
@@ -127,7 +136,7 @@ public class OVRGradleGeneration
 	public void OnPostGenerateGradleAndroidProject(string path)
 	{
 		UnityEngine.Debug.Log("OVRGradleGeneration triggered.");
-#if UNITY_ANDROID
+
 		var targetOculusPlatform = new List<string>();
 		if (OVRDeviceSelector.isTargetDeviceGearVrOrGo)
 		{
@@ -140,104 +149,117 @@ public class OVRGradleGeneration
 		OVRPlugin.AddCustomMetadata("target_oculus_platform", String.Join("_", targetOculusPlatform.ToArray()));
 		UnityEngine.Debug.LogFormat("  GearVR or Go = {0}  Quest = {1}", OVRDeviceSelector.isTargetDeviceGearVrOrGo, OVRDeviceSelector.isTargetDeviceQuest);
 
-		bool isQuestOnly = OVRDeviceSelector.isTargetDeviceQuest && !OVRDeviceSelector.isTargetDeviceGearVrOrGo;
+#if UNITY_2019_3_OR_NEWER
+		string gradleBuildPath = Path.Combine(path, "../launcher/build.gradle");
+#else
+		string gradleBuildPath = Path.Combine(path, "build.gradle");
+#endif
+		//Enable v2signing for Quest only
+		bool v2SigningEnabled = OVRDeviceSelector.isTargetDeviceQuest && !OVRDeviceSelector.isTargetDeviceGearVrOrGo;
 
-		if (isQuestOnly)
+		if (File.Exists(gradleBuildPath))
 		{
-			if (File.Exists(Path.Combine(path, "build.gradle")))
+			try
 			{
-				try
-				{
-					string gradle = File.ReadAllText(Path.Combine(path, "build.gradle"));
+				string gradle = File.ReadAllText(gradleBuildPath);
+				int v2Signingindex = gradle.IndexOf("v2SigningEnabled false");
 
-					int v2Signingindex = gradle.IndexOf("v2SigningEnabled false");
-					if (v2Signingindex != -1)
+				if (v2Signingindex != -1)
+				{
+					//v2 Signing flag found, ensure the correct value is set based on platform.
+					if (v2SigningEnabled)
 					{
 						gradle = gradle.Replace("v2SigningEnabled false", "v2SigningEnabled true");
-						System.IO.File.WriteAllText(Path.Combine(path, "build.gradle"), gradle);
+						System.IO.File.WriteAllText(gradleBuildPath, gradle);
 					}
 				}
-				catch (System.Exception e)
+				else
 				{
-					UnityEngine.Debug.LogWarningFormat("Unable to overwrite build.gradle, error {0}", e.Message);
+					//v2 Signing flag missing, add it right after the key store password and set the value based on platform.
+					int keyPassIndex = gradle.IndexOf("keyPassword");
+					if (keyPassIndex != -1)
+					{
+						int v2Index = gradle.IndexOf("\n", keyPassIndex) + 1;
+						if(v2Index != -1)
+						{
+							gradle = gradle.Insert(v2Index, "v2SigningEnabled " + (v2SigningEnabled ? "true" : "false") + "\n");
+							System.IO.File.WriteAllText(gradleBuildPath, gradle);
+						}
+					}
 				}
 			}
-			else
+			catch (System.Exception e)
 			{
-				UnityEngine.Debug.LogWarning("Unable to locate build.gradle");
+				UnityEngine.Debug.LogWarningFormat("Unable to overwrite build.gradle, error {0}", e.Message);
 			}
+		}
+		else
+		{
+			UnityEngine.Debug.LogWarning("Unable to locate build.gradle");
 		}
 
 		PatchAndroidManifest(path);
-#endif
 	}
 
-#if UNITY_ANDROID
 	public void PatchAndroidManifest(string path)
 	{
 		string manifestFolder = Path.Combine(path, "src/main");
-		try
+		string file = manifestFolder + "/AndroidManifest.xml";
+
+		bool patchedSecurityConfig = false;
+		// If Enable NSC Config, copy XML file into gradle project
+		OVRProjectConfig projectConfig = OVRProjectConfig.GetProjectConfig();
+		if (projectConfig != null)
 		{
-			// Load android manfiest file
-			XmlDocument doc = new XmlDocument();
-			doc.Load(manifestFolder + "/AndroidManifest.xml");
-
-			string androidNamepsaceURI;
-			XmlElement element = (XmlElement)doc.SelectSingleNode("/manifest");
-			if (element == null)
+			if (projectConfig.enableNSCConfig)
 			{
-				UnityEngine.Debug.LogError("Could not find manifest tag in android manifest.");
-				return;
-			}
-
-			// Get android namespace URI from the manifest
-			androidNamepsaceURI = element.GetAttribute("xmlns:android");
-			if (!string.IsNullOrEmpty(androidNamepsaceURI))
-			{
-				// Look for intent filter category and change LAUNCHER to INFO
-				XmlNodeList nodeList = doc.SelectNodes("/manifest/application/activity/intent-filter/category");
-				foreach (XmlElement e in nodeList)
+				// If no custom xml security path is specified, look for the default location in the integrations package.
+				string securityConfigFile = projectConfig.securityXmlPath;
+				if (string.IsNullOrEmpty(securityConfigFile))
 				{
-					string attr = e.GetAttribute("name", androidNamepsaceURI);
-					if (attr == "android.intent.category.LAUNCHER")
-					{
-						e.SetAttribute("name", androidNamepsaceURI, "android.intent.category.INFO");
-						doc.Save(manifestFolder + "/AndroidManifest.xml");
-					}
+					securityConfigFile = GetOculusProjectNetworkSecConfigPath();
+				}
+				else
+				{
+					Uri configUri = new Uri(Path.GetFullPath(securityConfigFile));
+					Uri projectUri = new Uri(Application.dataPath);
+					Uri relativeUri = projectUri.MakeRelativeUri(configUri);
+					securityConfigFile = relativeUri.ToString();
 				}
 
-				//If Quest is the target device, add the headtracking manifest tag
-				if (OVRDeviceSelector.isTargetDeviceQuest)
+				string xmlDirectory = Path.Combine(path, "src/main/res/xml");
+				try
 				{
-					XmlNodeList manifestUsesFeatureNodes = doc.SelectNodes("/manifest/uses-feature");
-					bool foundHeadtrackingTag = false;
-					foreach (XmlElement e in manifestUsesFeatureNodes)
+					if (!Directory.Exists(xmlDirectory))
 					{
-						string attr = e.GetAttribute("name", androidNamepsaceURI);
-						if (attr == "android.hardware.vr.headtracking")
-							foundHeadtrackingTag = true;
+						Directory.CreateDirectory(xmlDirectory);
 					}
-					//If the tag already exists, don't patch with a new one. If it doesn't, we add it.
-					if (!foundHeadtrackingTag)
-					{
-						XmlNode manifestElement = doc.SelectSingleNode("/manifest");
-						XmlElement headtrackingTag = doc.CreateElement("uses-feature");
-						headtrackingTag.SetAttribute("name", androidNamepsaceURI, "android.hardware.vr.headtracking");
-						headtrackingTag.SetAttribute("version", androidNamepsaceURI, "1");
-						string tagRequired = OVRDeviceSelector.isTargetDeviceGearVrOrGo ? "false" : "true";
-						headtrackingTag.SetAttribute("required", androidNamepsaceURI, tagRequired);
-						manifestElement.AppendChild(headtrackingTag);
-						doc.Save(manifestFolder + "/AndroidManifest.xml");
-					}
+					File.Copy(securityConfigFile, Path.Combine(xmlDirectory, "network_sec_config.xml"), true);
+					patchedSecurityConfig = true;
+				}
+				catch (Exception e)
+				{
+					UnityEngine.Debug.LogError(e.Message);
 				}
 			}
 		}
-		catch (Exception e)
-		{
-			UnityEngine.Debug.LogError(e.Message);
-		}
+
+		OVRManifestPreprocessor.PatchAndroidManifest(file, enableSecurity: patchedSecurityConfig);
 	}
-#endif
+
+	private static string GetOculusProjectNetworkSecConfigPath()
+	{
+		var so = ScriptableObject.CreateInstance(typeof(OVRPluginUpdaterStub));
+		var script = MonoScript.FromScriptableObject(so);
+		string assetPath = AssetDatabase.GetAssetPath(script);
+		string editorDir = Directory.GetParent(assetPath).FullName;
+		string configAssetPath = Path.GetFullPath(Path.Combine(editorDir, "network_sec_config.xml"));
+		Uri configUri = new Uri(configAssetPath);
+		Uri projectUri = new Uri(Application.dataPath);
+		Uri relativeUri = projectUri.MakeRelativeUri(configUri);
+
+		return relativeUri.ToString();
+	}
 
 	public void OnPostprocessBuild(BuildReport report)
 	{
@@ -355,7 +377,7 @@ public class OVRGradleGeneration
 			DataReceivedEventHandler outputRecieved = new DataReceivedEventHandler(
 				(s, e) =>
 				{
-					if (e.Data.Length != 0 && !e.Data.Contains("\u001b"))
+					if (e.Data != null && e.Data.Length != 0 && !e.Data.Contains("\u001b"))
 					{
 						if (e.Data.Contains("free_cache"))
 						{
@@ -415,6 +437,6 @@ public class OVRGradleGeneration
 	}
 #endif
 #else
-		{
+{
 #endif
-		}
+}

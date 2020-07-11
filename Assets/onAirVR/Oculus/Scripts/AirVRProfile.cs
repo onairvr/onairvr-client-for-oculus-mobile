@@ -7,27 +7,20 @@
 
  ***********************************************************/
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Assertions.Comparers;
 
 public class AirVRProfile : AirVRProfileBase {
+    public AirVRProfile(VideoBitrate bitrate) : base(bitrate) {}
+
 	private bool _userPresent;
 
-	public override int videoWidth { 
+    public override (int width, int height) videoResolution {
         get {
-            return AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest ? 3264 : 2560;
+            return AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest ? (3200, 1600) : (2560, 1280);
         }
     }
 
-    public override int videoHeight { 
-        get {
-            return AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest ? 1632: 1280;
-        }
-    }
-
-    public override float videoFrameRate {
+    public override float defaultVideoFrameRate {
         get {
 #if !UNITY_EDITOR && UNITY_ANDROID
             AndroidJavaClass jc = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
@@ -93,36 +86,6 @@ public class AirVRProfile : AirVRProfileBase {
 	public override int[] rightEyeViewport { 
 		get {
 			return leftEyeViewport;
-		}
-	}
-
-	public override float[] videoRenderMeshVertices { 
-		get { 
-			return new float[] { 
-				-0.5f,  0.5f, 0.0f,
-				 0.5f,  0.5f, 0.0f,
-				-0.5f, -0.5f, 0.0f,
-				 0.5f, -0.5f, 0.0f 
-			};
-		}
-	}
-
-	public override float[] videoRenderMeshTexCoords { 
-		get { 
-			return new float[] {
-				0.0f, 1.0f,
-				1.0f, 1.0f,
-				0.0f, 0.0f,
-				1.0f, 0.0f
-			};
-		}
-	}
-
-	public override int[] videoRenderMeshIndices { 
-		get { 
-			return new int[] {
-				0, 1, 2, 2, 1, 3
-			};
 		}
 	}
 

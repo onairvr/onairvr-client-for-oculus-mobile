@@ -24,13 +24,43 @@ public abstract class AirVRCameraBase : MonoBehaviour {
 
     [SerializeField] private bool _enableAudio = true;
     [SerializeField] private AudioMixerGroup _audioMixerGroup;
+    [SerializeField] private AirVRProfileBase.VideoBitrate _videoBitrate = AirVRProfileBase.VideoBitrate.Normal;
+    [SerializeField] private ControllerOverlay _controllerOverlay = ControllerOverlay.Default;
+    [SerializeField] private GameObject _leftControllerModel = null;
+    [SerializeField] private GameObject _rightControllerModel = null;
+    [SerializeField] private bool _enablePointer = true;
+    [SerializeField] private Color _colorLaser = Color.white;
+    [SerializeField] private Texture2D _pointerCookie = null;
+    [SerializeField] private float _pointerCookieDepthScaleMultiplier = 0.015f;
 
-    protected HeadTrackerInputDevice headTracker { get; private set; } 
-    protected GameObject defaultTrackedControllerModel { get; private set; }
+    protected AirVRProfileBase.VideoBitrate videoBitrate => _videoBitrate;
+    protected HeadTrackerInputDevice headTracker { get; private set; }
 
-    protected abstract AirVRProfileBase profile { get; }
+    protected GameObject leftControllerModel {
+        get {
+            return _controllerOverlay == ControllerOverlay.Custom ? _leftControllerModel : Resources.Load<GameObject>("LeftControllerModel");
+        }
+    }
+    protected GameObject rightControllerModel {
+        get {
+            return _controllerOverlay == ControllerOverlay.Custom ? _rightControllerModel : Resources.Load<GameObject>("RightControllerModel");
+        }
+    }
+
+    protected AirVRTrackerFeedbackBase.PointerDesc pointerDesc {
+        get {
+            return new AirVRTrackerFeedbackBase.PointerDesc {
+                enabled = _controllerOverlay == ControllerOverlay.Custom ? _enablePointer : true,
+                colorLaser = _controllerOverlay == ControllerOverlay.Custom ? _colorLaser : Color.white,
+                cookie = _controllerOverlay == ControllerOverlay.Custom ? _pointerCookie : Resources.Load<Texture2D>("PointerCookie"),
+                cookieDepthScaleMultiplier = _controllerOverlay == ControllerOverlay.Custom ? _pointerCookieDepthScaleMultiplier : 0.015f
+            };
+        }
+    }
+
     protected abstract void RecenterPose();
 
+    public abstract AirVRProfileBase profile { get; }
     public abstract Matrix4x4 trackingSpaceToWorldMatrix { get; }
 
     protected virtual void Awake() {
@@ -60,15 +90,14 @@ public abstract class AirVRCameraBase : MonoBehaviour {
     }
 
     protected virtual void Start() {
-        defaultTrackedControllerModel = Resources.Load<GameObject>("trackedControllerModel");
-        
         _renderCommand = RenderCommand.Create(profile, _camera);
 
         AirVRClient.LoadOnce(profile, this);
         AirVRInputManager.LoadOnce();
 
 		AirVRClient.MessageReceived += onAirVRMesageReceived;
-        AirVRInputManager.RegisterInputDevice(headTracker);
+
+        AirVRInputManager.RegisterInputSender(headTracker);
 
         StartCoroutine(CallEndOfFrame());
 
@@ -82,14 +111,14 @@ public abstract class AirVRCameraBase : MonoBehaviour {
 
 		if (AirVRClient.playing) {
             if (_renderingRight == false) {
-                var (_, rotation) = headTracker.GetHeadPose(_thisTransform);
+                var pose = headTracker.currentPose;
 
-                onairvr_SetCameraOrientation(rotation.x, rotation.y, rotation.z, rotation.w, ref _viewNumber);
-                GL.IssuePluginEvent(onairvr_PreRenderVideoFrame_RenderThread_Func(), _viewNumber);
+                ocs_SetCameraOrientation(new AirVRVector4D(pose.rotation), ref _viewNumber);
+                GL.IssuePluginEvent(ocs_PreRenderVideoFrame_RenderThread_Func(), _viewNumber);
             }
 
             // clear color the texture only for the right eye when using single texture for the two eyes
-            _renderCommand.Issue(onairvr_RenderVideoFrame_RenderThread_Func(),
+            _renderCommand.Issue(ocs_RenderVideoFrame_RenderThread_Func(),
                                  renderEvent(_renderingRight ? FrameType.StereoRight : FrameType.StereoLeft, 
                                              profile.useSingleTextureForEyes == false || _renderingRight == false));
         }
@@ -114,7 +143,7 @@ public abstract class AirVRCameraBase : MonoBehaviour {
             _renderingRight = false;
 
 #if !UNITY_EDITOR && UNITY_ANDROID
-            GL.IssuePluginEvent(onairvr_EndOfRenderFrame_RenderThread_Func(), 0);
+            GL.IssuePluginEvent(ocs_EndOfRenderFrame_RenderThread_Func(), 0);
 #endif
         }
     }
@@ -124,7 +153,7 @@ public abstract class AirVRCameraBase : MonoBehaviour {
             if (message.Name.Equals(AirVRClientMessage.NameConnected)) {
                 saveCameraClipPlanes();
                 
-                onairvr_EnableNetworkTimeWarp(true);
+                ocs_EnableNetworkTimeWarp(true);
             }
             else if (message.Name.Equals(AirVRClientMessage.NameDisconnected)) {
                 restoreCameraClipPlanes();
@@ -135,47 +164,13 @@ public abstract class AirVRCameraBase : MonoBehaviour {
                 setCameraClipPlanes(message.NearClip, message.FarClip);
             }
             else if (message.Name.Equals(AirVRClientMessage.NameEnableNetworkTimeWarp)) {
-                onairvr_EnableNetworkTimeWarp(message.Enable);
+                ocs_EnableNetworkTimeWarp(message.Enable);
             }
         }
         else if (message.IsInputStreamEvent() && message.Name.Equals(AirVRClientMessage.NameRecenterPose)) {
             RecenterPose();
         }
 	}
-
-    protected class HeadTrackerInputDevice : AirVRTrackerInputDevice {
-        public HeadTrackerInputDevice(Transform camera) {
-            _camera = camera;
-        }
-
-        protected override string deviceName => AirVRInputDeviceName.HeadTracker;
-        protected override bool connected => true;
-
-        protected override void PendInputs(AirVRInputStream inputStream) {
-            var (position, rotation) = GetHeadPose(_camera);
-
-            inputStream.PendTransform(this, (byte)AirVRHeadTrackerKey.Transform, position, rotation);
-        }
-
-        public (Vector3 position, Quaternion rotation) GetHeadPose(Transform head) {
-            if (realWorldSpace != null) {
-                var worldToRealWorldMatrix = realWorldSpace.realWorldToWorldMatrix.inverse;
-
-                return (
-                    worldToRealWorldMatrix.MultiplyPoint(_camera.position),
-                    worldToRealWorldMatrix.rotation * _camera.rotation
-                );
-            }
-            else {
-                return (
-                    _camera.localPosition,
-                    _camera.localRotation
-                );
-            }
-        }
-
-        private Transform _camera;
-    }
 
     private int renderEvent(FrameType frameType, bool clearColor) {
         return (int)(((int)frameType << 24) + (clearColor ? RenderEventMaskClearColor : 0));
@@ -197,19 +192,19 @@ public abstract class AirVRCameraBase : MonoBehaviour {
     }
 
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern void onairvr_EnableNetworkTimeWarp(bool enable);
+    private static extern void ocs_EnableNetworkTimeWarp(bool enable);
 
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern void onairvr_SetCameraOrientation(float x, float y, float z, float w, ref int viewNumber);
+    private static extern void ocs_SetCameraOrientation(AirVRVector4D rotation, ref int viewNumber);
 
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern System.IntPtr onairvr_PreRenderVideoFrame_RenderThread_Func();
+    private static extern System.IntPtr ocs_PreRenderVideoFrame_RenderThread_Func();
 
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern System.IntPtr onairvr_RenderVideoFrame_RenderThread_Func();
+    private static extern System.IntPtr ocs_RenderVideoFrame_RenderThread_Func();
 
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern System.IntPtr onairvr_EndOfRenderFrame_RenderThread_Func();
+    private static extern System.IntPtr ocs_EndOfRenderFrame_RenderThread_Func();
 
     private const uint RenderEventMaskClearColor = 0x00800000U;
 
@@ -217,6 +212,11 @@ public abstract class AirVRCameraBase : MonoBehaviour {
         StereoLeft = 0,
         StereoRight,
         Mono
+    }
+
+    private enum ControllerOverlay {
+        Default,
+        Custom
     }
 
     private abstract class RenderCommand {
@@ -252,5 +252,38 @@ public abstract class AirVRCameraBase : MonoBehaviour {
         }
 
         public override void Clear() { }
+    }
+
+    protected class HeadTrackerInputDevice : AirVRTrackerInputDevice {
+        private Transform _head;
+
+        public Pose currentPose {
+            get {
+                if (realWorldSpace != null) {
+                    var worldToRealWorldMatrix = realWorldSpace.realWorldToWorldMatrix.inverse;
+
+                    return new Pose(
+                        worldToRealWorldMatrix.MultiplyPoint(_head.position),
+                        worldToRealWorldMatrix.rotation * _head.rotation
+                    );
+                }
+                else {
+                    return new Pose(_head.localPosition, _head.localRotation);
+                }
+            }
+        }
+
+        public HeadTrackerInputDevice(Transform head) {
+            _head = head;
+        }
+
+        // implements AirVRTrackerInputDevice
+        public override byte id => (byte)AirVRInputDeviceID.HeadTracker;
+
+        public override void PendInputsPerFrame(AirVRInputStream inputStream) {
+            var pose = currentPose;
+
+            inputStream.PendPose(this, (byte)AirVRHeadTrackerControl.Pose, pose.position, pose.rotation);
+        }
     }
 }

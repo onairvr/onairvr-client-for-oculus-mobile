@@ -1,12 +1,15 @@
 fileFormatVersion: 2
 guid: 964d9fa801ba340ac8cf8e9aa914b2c4
-timeCreated: 1486633606
-licenseType: Pro
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - _pointerCookieShader: {fileID: 4800000, guid: 1a7b1de93a2df49099502e89fad9c81e,
+  - _audioMixerGroup: {instanceID: 0}
+  - _leftControllerModel: {fileID: 1776903595613500, guid: e721fd0d5288841fc9179d7f7e1f56f8,
       type: 3}
+  - _rightControllerModel: {fileID: 1776903595613500, guid: 35786ad87fe1727429532353fb01892f,
+      type: 3}
+  - _pointerCookie: {fileID: 2800000, guid: 3f1842b0bdbbc2b4d841e87cea6b58c0, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

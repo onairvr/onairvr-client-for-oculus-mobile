@@ -1,8 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+/***********************************************************
+
+  Copyright (c) 2017-present Clicked, Inc.
+
+  Licensed under the MIT license found in the LICENSE file 
+  in the Docs folder of the distributed package.
+
+ ***********************************************************/
+
 using System.IO;
 using UnityEditor;
-using UnityEngine;
 
 public class PackageBuilder {
     [MenuItem("onAirVR/Export onAirVR Client...")]
@@ -22,9 +30,9 @@ public class PackageBuilder {
             assets.Add(AssetDatabase.GUIDToAssetPath(guid));
         }
         assets.Add("Assets/Plugins/Android/assets/client.license");
-        assets.Add("Assets/Plugins/Android/onAirVRClientPlugin.jar");
+        assets.Add("Assets/Plugins/Android/libocs.so");
+        assets.Add("Assets/Plugins/Android/ocs.jar");
         assets.Add("Assets/Plugins/Android/kotlin-stdlib.jar");
-        assets.Add("Assets/Plugins/Android/libonAirVRClientPlugin.so");
         AssetDatabase.ExportPackage(assets.ToArray(), targetPath);
 
         EditorUtility.DisplayDialog("Congratulation!", "The package is exported successfully.", "Thanks.");

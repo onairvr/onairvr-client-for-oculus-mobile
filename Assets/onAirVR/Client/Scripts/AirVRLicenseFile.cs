@@ -8,7 +8,6 @@
  ***********************************************************/
 
 using UnityEngine;
-using System.Collections;
 
 internal class AirVRClientLicenseFile {
     internal AirVRClientLicenseFile(string filename) {

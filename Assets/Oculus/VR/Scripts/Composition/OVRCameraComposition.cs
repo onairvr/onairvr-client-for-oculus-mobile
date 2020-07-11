@@ -20,7 +20,7 @@ using System.Collections;
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
 
 public abstract class OVRCameraComposition : OVRComposition {
-	protected GameObject cameraFramePlaneObject;
+	protected GameObject cameraFramePlaneObject = null;
 	protected float cameraFramePlaneDistance;
 
 	protected readonly bool hasCameraDeviceOpened = false;
@@ -53,8 +53,7 @@ public abstract class OVRCameraComposition : OVRComposition {
 		{
 			OVRPlugin.CameraExtrinsics extrinsics;
 			OVRPlugin.CameraIntrinsics intrinsics;
-			OVRPlugin.Posef calibrationRawPose;
-			if (OVRPlugin.GetExternalCameraCount() > 0 && OVRPlugin.GetMixedRealityCameraInfo(0, out extrinsics, out intrinsics, out calibrationRawPose))
+			if (OVRPlugin.GetExternalCameraCount() > 0 && OVRPlugin.GetMixedRealityCameraInfo(0, out extrinsics, out intrinsics))
 			{
 				OVRPlugin.SetCameraDevicePreferredColorFrameSize(cameraDevice, intrinsics.ImageSensorPixelResolution.w, intrinsics.ImageSensorPixelResolution.h);
 			}
@@ -107,11 +106,13 @@ public abstract class OVRCameraComposition : OVRComposition {
 		boundaryMesh = null;
 	}
 
-	protected void CreateCameraFramePlaneObject(GameObject parentObject, Camera mixedRealityCamera, bool useDynamicLighting)
+	protected void RefreshCameraFramePlaneObject(GameObject parentObject, Camera mixedRealityCamera, bool useDynamicLighting)
 	{
+		OVRCompositionUtil.SafeDestroy(ref cameraFramePlaneObject);
+
 		Debug.Assert(cameraFramePlaneObject == null);
 		cameraFramePlaneObject = GameObject.CreatePrimitive(PrimitiveType.Quad);
-		cameraFramePlaneObject.name = "MRCameraFrame";
+		cameraFramePlaneObject.name = "OculusMRC_CameraFrame";
 		cameraFramePlaneObject.transform.parent = cameraInTrackingSpace ? cameraRig.trackingSpace : parentObject.transform;
 		cameraFramePlaneObject.GetComponent<Collider>().enabled = false;
 		cameraFramePlaneObject.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;

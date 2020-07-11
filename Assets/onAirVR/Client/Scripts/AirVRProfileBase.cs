@@ -7,31 +7,60 @@
 
  ***********************************************************/
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 
 [System.Serializable]
 public abstract class AirVRProfileBase {
-    private const int ProfilerMaskFrame = 0x01;
-    private const int ProfilerMaskReport = 0x02;
+    public const int ProfilerMaskFrame = 0x01;
+    public const int ProfilerMaskReport = 0x02;
 
     public enum RenderType {
         DirectOnTwoEyeTextures,
         UseSeperateVideoRenderTarget
     }
 
+    public enum VideoBitrate {
+        Low,
+        Normal,
+        High,
+        Best
+    }
+
+    public AirVRProfileBase(VideoBitrate bitrate) {
+        switch (bitrate) {
+            case VideoBitrate.Low:
+                videoMinBitrate = 6000000;
+                videoStartBitrate = 8000000;
+                videoMaxBitrate = 16000000;
+                break;
+            case VideoBitrate.Normal:
+                videoMinBitrate = 8000000;
+                videoStartBitrate = 16000000;
+                videoMaxBitrate = 28000000;
+                break;
+            case VideoBitrate.High:
+                videoMinBitrate = 8000000;
+                videoStartBitrate = 24000000;
+                videoMaxBitrate = 40000000;
+                break;
+            default:
+                break;
+        }
+    }
+
 #pragma warning disable CS0414
     [SerializeField] private string UserID;
-    [SerializeField] private int Bitrate;
     [SerializeField] private int Profilers;
-    [SerializeField] private string ProfilerLogPostfix;
+    [SerializeField] private string ProfilerLogPathFormat;
     [SerializeField] private string[] SupportedVideoCodecs;
     [SerializeField] private string[] SupportedAudioCodecs;
     [SerializeField] private int VideoWidth;
     [SerializeField] private int VideoHeight;
     [SerializeField] private float VideoFrameRate;
+    [SerializeField] private int VideoMinBitrate;
+    [SerializeField] private int VideoStartBitrate;
+    [SerializeField] private int VideoMaxBitrate;
     [SerializeField] private float IPD;
     [SerializeField] private bool Stereoscopy;
     [SerializeField] private float[] LeftEyeCameraNearPlane;
@@ -39,9 +68,6 @@ public abstract class AirVRProfileBase {
 
     [SerializeField] private int[] LeftEyeViewport;
     [SerializeField] private int[] RightEyeViewport;
-    [SerializeField] private float[] VideoRenderMeshVertices;
-    [SerializeField] private float[] VideoRenderMeshTexCoords;
-    [SerializeField] private int[] VideoRenderMeshIndices;
     [SerializeField] private float[] VideoScale;
 #pragma warning restore CS0414
 
@@ -98,9 +124,8 @@ public abstract class AirVRProfileBase {
         }
     }
 
-    public abstract int videoWidth { get; }
-    public abstract int videoHeight { get; }
-    public abstract float videoFrameRate { get; }
+    public abstract (int width, int height) videoResolution { get; }
+    public abstract float defaultVideoFrameRate { get; }
     public abstract bool stereoscopy { get; }
     public abstract float[] leftEyeCameraNearPlane { get; }
     public abstract Vector3 eyeCenterPosition { get; }
@@ -172,65 +197,67 @@ public abstract class AirVRProfileBase {
         }
     }
 
-    public int bitrate {
+    public float videoFrameRate {
         get {
-            return Bitrate;
+            return VideoFrameRate;
         }
         set {
-            Bitrate = value;
+            VideoFrameRate = value;
         }
     }
 
-    public string profiler {
+    public int videoMinBitrate {
         get {
-            var profileFrame = (Profilers & ProfilerMaskFrame) != 0;
-            var profileReport = (Profilers & ProfilerMaskReport) != 0;
-
-            if (profileFrame && profileReport) {
-                return "full";
-            }
-            else if (profileFrame) {
-                return "frame";
-            }
-            else if (profileReport) {
-                return "report";
-            }
-            else {
-                return "";
-            }
+            return VideoMinBitrate;
         }
         set {
-            switch (value) {
-                case "full":
-                    Profilers = ProfilerMaskFrame | ProfilerMaskReport;
-                    break;
-                case "frame":
-                    Profilers = ProfilerMaskFrame;
-                    break;
-                case "report":
-                    Profilers = ProfilerMaskReport;
-                    break;
-                default:
-                    Profilers = 0;
-                    break;
-            }
+            VideoMinBitrate = value;
         }
     }
 
-    public string profilerLogPostfix {
+    public int videoStartBitrate {
         get {
-            return ProfilerLogPostfix;
+            return VideoStartBitrate;
         }
         set {
-            ProfilerLogPostfix = value;
+            VideoStartBitrate = value;
+        }
+    }
+
+    public int videoMaxBitrate {
+        get {
+            return VideoMaxBitrate;
+        }
+        set {
+            VideoMaxBitrate = value;
+        }
+    }
+
+    public int profilers {
+        get {
+            return Profilers;
+        }
+        set {
+            Profilers = value;
+        }
+    }
+
+    public string profilerLogPathFormat {
+        get {
+            return ProfilerLogPathFormat;
+        }
+        set {
+            ProfilerLogPathFormat = value;
         }
     }
 
 	public AirVRProfileBase GetSerializable() {
+        var resolution = videoResolution;
+
 		SupportedVideoCodecs = supportedVideoCodecs;
 		SupportedAudioCodecs = supportedAudioCodecs;
-		VideoWidth = videoWidth;
-		VideoHeight = videoHeight;
+		VideoWidth = resolution.width;
+		VideoHeight = resolution.height;
 		VideoFrameRate = videoFrameRate;
         IPD = ipd;
 		Stereoscopy = stereoscopy;
@@ -239,15 +266,18 @@ public abstract class AirVRProfileBase {
 
 		LeftEyeViewport = leftEyeViewport;
 		RightEyeViewport = rightEyeViewport;
-		VideoRenderMeshVertices = videoRenderMeshVertices;
-		VideoRenderMeshTexCoords = videoRenderMeshTexCoords;
-		VideoRenderMeshIndices = videoRenderMeshIndices;
 		VideoScale = videoScale;
 
-		return this;
+        if (VideoFrameRate <= 0.0f) {
+            VideoFrameRate = defaultVideoFrameRate;
+        }
+
+        return this;
 	}
 
     public override string ToString () {
+        var resolution = videoResolution;
+
         return string.Format("[AirVRProfile]\n" +
                              "    videoWidth={0}\n" +
                              "    videoHeight={1}\n" +
@@ -260,8 +290,8 @@ public abstract class AirVRProfileBase {
                              "    eyeCenterPosition={18}\n" + 
                              "    ipd={19}\n" + 
                              "    stereoscopy={20}\n", 
-                             videoWidth, 
-                             videoHeight, 
+                             resolution.width, 
+                             resolution.height, 
                              videoFrameRate, 
                              videoScale[0], videoScale[1], 
                              renderType, 

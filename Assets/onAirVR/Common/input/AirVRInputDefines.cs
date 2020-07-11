@@ -7,50 +7,97 @@
 
  ***********************************************************/
 
-public static class AirVRInputDeviceName {
-    public const string HeadTracker = "HeadTracker";
-    public const string LeftHandTracker = "LeftHandTracker";
-    public const string RightHandTracker = "RightHandTracker";
-    public const string Controller = "Controller";
+using System.Runtime.InteropServices;
+using UnityEngine;
+
+[StructLayout(LayoutKind.Sequential)]
+public struct AirVRVector2D {
+    public float x;
+    public float y;
+
+    public AirVRVector2D(Vector2 value) {
+        x = value.x;
+        y = value.y;
+    }
+
+    public Vector3 toVector2() {
+        return new Vector2(x, y);
+    }
 }
 
-public enum AirVRHeadTrackerKey {
-    Transform = 0,
-    RaycastHitResult,
+[StructLayout(LayoutKind.Sequential)]
+public struct AirVRVector3D {
+    public float x;
+    public float y;
+    public float z;
 
-    // ADD ADDITIONAL KEYS HERE
+    public AirVRVector3D(Vector3 value) {
+        x = value.x;
+        y = value.y;
+        z = value.z;
+    }
 
-    Max
+    public Vector3 toVector3() {
+        return new Vector3(x, y, z);
+    }
 }
 
-public enum AirVRLeftHandTrackerKey {
-    Transform = 0,
-    RaycastHitResult,
+[StructLayout(LayoutKind.Sequential)]
+public struct AirVRVector4D {
+    public float x;
+    public float y;
+    public float z;
+    public float w;
 
-    // ADD ADDITIONAL KEYS HERE
+    public AirVRVector4D(Quaternion value) {
+        x = value.x;
+        y = value.y;
+        z = value.z;
+        w = value.w;
+    }
 
-    Max
+    public Quaternion toQuaternion() {
+        return new Quaternion(x, y, z, w);
+    }
 }
 
-public enum AirVRRightHandTrackerKey {
-    Transform = 0,
-    RaycastHitResult,
-
-    // ADD ADDITIONAL KEYS HERE
-
-    Max
+public enum AirVRInputDeviceID : byte {
+    HeadTracker = 0,
+    LeftHandTracker = 1,
+    RightHandTracker = 2,
+    Controller = 3,
+    TouchScreen = 4
 }
 
-public enum AirVRControllerKey {
-    Touchpad = 0,
+public enum AirVRInputDirection : byte {
+    Up = 0,
+    Down,
+    Left,
+    Right
+}
 
-    ButtonTouchpad,
-    ButtonUp,
-    ButtonDown,
-    ButtonLeft,
-    ButtonRight,
+public enum AirVRDeviceStatus : byte {
+    Unavailable = 0,
+    Ready
+}
 
-    Axis2DLThumbstick,
+public enum AirVRHeadTrackerControl : byte {
+    Pose = 0
+}
+
+public enum AirVRHandTrackerControl : byte {
+    Status = 0,
+    Pose
+}
+
+public enum AirVRHandTrackerFeedbackControl : byte {
+    RenderOnClient = 0,
+    RaycastHit,
+    Vibration
+}
+
+public enum AirVRControllerControl : byte {
+    Axis2DLThumbstick = 0,
     Axis2DRThumbstick,
     AxisLIndexTrigger,
     AxisRIndexTrigger,
@@ -63,26 +110,17 @@ public enum AirVRControllerKey {
     ButtonStart,
     ButtonBack,
     ButtonLThumbstick,
-    ButtonRThumbstick,
-    ButtonLShoulder,
-    ButtonRShoulder,
+    ButtonRThumbstick
+}
 
-    // ADD ADDITIONAL KEYS HERE
+public enum AirVRTouchScreenControl : byte {
+    TouchIndexStart = 0,
+    TouchIndexEnd = 9
+}
 
-    ExtAxis2DTouchpad,
-    ExtTouchTouchpad,
-    ExtButtonLIndexTrigger,
-    ExtButtonRIndexTrigger,
-    ExtButtonLHandTrigger,
-    ExtButtonRHandTrigger,
-    ExtButtonLThumbstickUp,
-    ExtButtonLThumbstickDown,
-    ExtButtonLThumbstickLeft,
-    ExtButtonLThumbstickRight,
-    ExtButtonRThumbstickUp,
-    ExtButtonRThumbstickDown,
-    ExtButtonRThumbstickLeft,
-    ExtButtonRThumbstickRight,
-
-    Max
+public enum AirVRTouchPhase {
+    Ended = 0,
+    Canceled,
+    Stationary,
+    Moved
 }

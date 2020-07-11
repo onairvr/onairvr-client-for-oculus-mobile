@@ -7,31 +7,29 @@
 
  ***********************************************************/
 
-using UnityEngine;
 using System;
-using System.IO;
 using System.Runtime.InteropServices;
 
 public class AirVRClientEventDispatcher : AirVREventDispatcher {
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern void onairvr_SendUserData(IntPtr data, int length);
+    private static extern void ocs_SendUserData(IntPtr data, int length);
 
     [DllImport(AirVRClient.LibPluginName)]
-	private static extern bool onairvr_CheckMessageQueue(out IntPtr source, out IntPtr data, out int length);
+	private static extern bool ocs_CheckMessageQueue(out IntPtr source, out IntPtr data, out int length);
 
 	[DllImport(AirVRClient.LibPluginName)]
-	private static extern void onairvr_RemoveFirstMessageFromQueue();
+	private static extern void ocs_RemoveFirstMessageFromQueue();
 
     protected override AirVRMessage ParseMessageImpl(IntPtr source, string message) {
         return AirVRClientMessage.Parse(source, message);
     }
 
     protected override bool CheckMessageQueueImpl(out IntPtr source, out IntPtr data, out int length) {
-		return onairvr_CheckMessageQueue(out source, out data, out length);
+		return ocs_CheckMessageQueue(out source, out data, out length);
     }
 
     protected override void RemoveFirstMessageFromQueueImpl() {
-		onairvr_RemoveFirstMessageFromQueue();
+		ocs_RemoveFirstMessageFromQueue();
     }
 
     internal void SendUserData(byte[] data) {
@@ -39,7 +37,7 @@ public class AirVRClientEventDispatcher : AirVREventDispatcher {
 
         try {
             Marshal.Copy(data, 0, ptr, data.Length);
-            onairvr_SendUserData(ptr, data.Length);
+            ocs_SendUserData(ptr, data.Length);
         }
         finally {
             Marshal.FreeHGlobal(ptr);

@@ -8,14 +8,13 @@
  ***********************************************************/
 
 using UnityEngine;
-using UnityEngine.Assertions;
 using System.Runtime.InteropServices;
 
 [RequireComponent(typeof(Camera))]
 
 public class AirVRCamera : AirVRCameraBase {
     [DllImport(AirVRClient.LibPluginName)]
-    private static extern void onairvr_InitJNI();
+    private static extern void ocs_InitJNI();
 
     private static AirVRCamera _instance;
 
@@ -32,11 +31,11 @@ public class AirVRCamera : AirVRCameraBase {
     protected override void Awake () {
         // Work around : Only the game module can access to java classes in onAirVR client plugin.
         if (Application.isEditor == false && Application.platform == RuntimePlatform.Android) {
-            onairvr_InitJNI();
+            ocs_InitJNI();
         }
         
         base.Awake();
-        _profile = new AirVRProfile();
+        _profile = new AirVRProfile(videoBitrate);
         _trackingSpace = transform.parent;
     }
 
@@ -46,12 +45,13 @@ public class AirVRCamera : AirVRCameraBase {
         _leftHandTracker = new AirVRLeftHandTrackerInputDevice();
         _rightHandTracker = new AirVRRightHandTrackerInputDevice();
 
-        AirVRInputManager.RegisterInputDevice(_leftHandTracker);
-        AirVRInputManager.RegisterInputDevice(_rightHandTracker);
-        AirVRInputManager.RegisterInputDevice(new AirVRControllerInputDevice());
+        AirVRInputManager.RegisterInputSender(_leftHandTracker);
+        AirVRInputManager.RegisterInputSender(_rightHandTracker);
+        AirVRInputManager.RegisterInputSender(new AirVRControllerInputDevice());
 
-        gameObject.AddComponent<AirVRGazePointer>();
-		gameObject.AddComponent<AirVRTrackedControllerPointer>().Configure(defaultTrackedControllerModel, true);
+        var desc = pointerDesc;
+        gameObject.AddComponent<AirVRLeftHandTracker>().Configure(_profile, leftControllerModel, desc);
+        gameObject.AddComponent<AirVRRightHandTracker>().Configure(_profile, rightControllerModel, desc);
 
         if (_preferRealWorldSpace && 
             AirVROVRInputHelper.GetHeadsetType() == AirVROVRInputHelper.HeadsetType.Quest) {
@@ -69,7 +69,7 @@ public class AirVRCamera : AirVRCameraBase {
         }
     }
 
-    protected override AirVRProfileBase profile => _profile;
+    public override AirVRProfileBase profile => _profile;
 
     protected override void RecenterPose() {
         OVRManager.display.RecenterPose();

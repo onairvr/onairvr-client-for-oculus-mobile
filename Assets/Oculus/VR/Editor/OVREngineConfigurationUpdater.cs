@@ -19,6 +19,10 @@ limitations under the License.
 
 ************************************************************************************/
 
+#if USING_XR_MANAGEMENT && USING_XR_SDK_OCULUS
+#define USING_XR_SDK
+#endif
+
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
@@ -138,6 +142,7 @@ class OVREngineConfigurationUpdater
 			PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
 		}
 
+#if !USING_XR_SDK
 		if (!PlayerSettings.virtualRealitySupported)
 		{
 			// NOTE: This value should not affect the main window surface
@@ -154,6 +159,7 @@ class OVREngineConfigurationUpdater
 				QualitySettings.antiAliasing = 1;
 			}
 		}
+#endif
 
 		if (QualitySettings.vSyncCount != 0)
 		{
