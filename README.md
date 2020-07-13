@@ -12,7 +12,7 @@ onAirVR consists of two applications - mobile VR client app & content app on PC.
 
 Please ensure you have right hardwares :
 
-* **Oculus Mobile** device except for Samsung GearVR
+* **Oculus Quest**
 * **Windows** desktop powered by **NVIDIA graphics**
 
 This plugin is for client app development, and the plugins for PC content app are belows :
@@ -24,7 +24,7 @@ This plugin is for client app development, and the plugins for PC content app ar
 
 ## Downloads
 
-This project is the official onAirVR app for Oculus Mobile. You can clone the whole project and build for your Oculus mobile devices. Please see [Getting Started](https://github.com/onairvr/onairvr-client-for-oculus-mobile/wiki/Getting-Started) for how to build.
+This project is the official onAirVR app for Oculus Mobile. You can download and install the apk from [Releases](https://github.com/onairvr/onairvr-client-for-oculus-mobile/releases), or clone the whole project and build yourself. Please see [Getting Started](https://github.com/onairvr/onairvr-client-for-oculus-mobile/wiki/Getting-Started) for how to build.
 
 You may download pre-exported packages of each version from [Releases](https://github.com/onairvr/onairvr-client-for-oculus-mobile/releases) to develop your own onAirVR app.
 
